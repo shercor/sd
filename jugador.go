@@ -3,7 +3,30 @@ import (
     "fmt"
     "os"
 	"bufio"
+	//"net"
+	//"strconv"
+	//"math/rand"
 )
+
+//func etapa_uno(x int, y int) int {
+func etapa_uno(bot bool) int {
+
+	// elegir numero entre el 1 y 10 
+
+
+	return 0
+}
+
+func etapa_dos(bot bool) int {
+	return 0
+}
+
+
+func etapa_tres(bot bool) int {
+	return 0
+}
+
+
 func main() {
 	argsWithoutProg := os.Args[1:]
 	// checker si es bot o no
@@ -44,11 +67,48 @@ func main() {
 		}
 	}
 
+	// obtener puerto disponible para el jugador
+	// rango para el puerto aleatorio de la partida
+	/*
+	min := 49154
+	max := 65535
+
+	PUERTO_JUGADOR := ""
+	PUERTO_JUGADOR = strconv.Itoa(rand.Intn(max-min) + min)
+
+	for{
+		s, err := net.ResolveUDPAddr("udp4", PUERTO_JUGADOR) 
+		if err != nil {
+			fmt.Println(err)
+			PUERTO_JUGADOR := strconv.Itoa(rand.Intn(max-min) + min)
+			continue
+		}
+		s.Close()
+		break
+	}				
+	fmt.Println("PUERTO_JUGADOR", PUERTO_JUGADOR)
+	*/
+
+
+	var etapa = 1 // TO-DO: recibir esto desde Lider
+
+	// conectar con lider
+
 	for alive {
 		fmt.Println("-----------Vivo----------")
+		switch etapa {
+		case 1:
+			fmt.Println("Etapa 1")
+		case 2:
+			fmt.Println("Etapa 2")
+		case 3:
+			fmt.Println("Etapa 2")
+		default: 
+			fmt.Println("Etapa no valida")
+	}
 
 		// TO-DO: logica de juegos 
-		
+
 		break // TO-DO: logica de salida
 	}
 	fmt.Println("Finalizando proceso jugador")
