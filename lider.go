@@ -100,9 +100,22 @@ func esEliminado(jugador_eliminado jugador) { // Cuando la logica detecta que el
 
 func main() {
 	// Definiciones iniciales
-	const cant_jugadores = 16
+
+	cant_jugadores := 16
+	argsWithoutProg := os.Args[1:]
+	
+	if len(argsWithoutProg) ==  1 {
+		cant_jugadores, err :=  strconv.Atoi(argsWithoutProg[0])
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(cant_jugadores)
+	}
+
 	const wones = 100000000                      // 100 millones de wones vale cada jugador
-	var lista_jugadores [cant_jugadores]*jugador // Lista de structs con los jugadores
+	//var lista_jugadores [cant_jugadores]*jugador // Deprecado: Lista de structs con los jugadores
+	var lista_jugadores []*jugador // Slice de structs con los jugadores
+
 	var jugadores_vivos int = cant_jugadores
 
 	// Setup inicial recibiendo los jugadores
@@ -112,7 +125,8 @@ func main() {
 		// recibirPeticion()
 		// Guardar la IP y puerto recibidos
 
-		lista_jugadores[i] = newJugador(i+1, "ip", "puerto") // Jugador 1, 2, 3, ..., 16
+		//lista_jugadores[i] = newJugador(i+1, "ip", "puerto") // Deprecado.
+		lista_jugadores = append(lista_jugadores, newJugador(i+1, "ip", "puerto") ) // Jugador 1, 2, 3, ..., 16
 
 		// Aqui responde al jugador con el ID asignado
 
