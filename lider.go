@@ -27,7 +27,8 @@ type jugador struct {
 	puerto            string
 	estado            string
 	suma_rptas_etapa1 int
-	// equipo?
+	equipo_etapa2     string
+	// pareja??
 }
 
 func newJugador(ID int, IP string, puerto string) *jugador { // Crea un struct jugador con ID, IP, puerto, etc
@@ -105,14 +106,14 @@ func mostrarMuerte(ID_player int) { // Muestra por consola cuando muere un jugad
 
 func informarResultadoRonda(muertos_por_ronda []int, pasan_etapa []int) { // Lee los ID de quienes murieron/pasaron y les manda mensaje, tambien al pozo
 	for i := 0; i < len(muertos_por_ronda); i++ {
-		var playerID = muertos_por_ronda[i]
+		playerID := muertos_por_ronda[i]
 		// Mandar msj a jugador de ID playerID
 		// Mensaje de ejemplo:
 		fmt.Println("El jugador", playerID, "(tú) está eliminado")
 		// Mandar msj al pozo para aumentarlo
 	}
 	for i := 0; i < len(pasan_etapa); i++ {
-		var playerID = pasan_etapa[i]
+		playerID := pasan_etapa[i]
 		// Mandar msj a jugador de ID playerID
 		// Mensajes de ejemplo
 		fmt.Println("El jugador", playerID, "(tú) pasa a la siguiente etapa")
@@ -120,8 +121,8 @@ func informarResultadoRonda(muertos_por_ronda []int, pasan_etapa []int) { // Lee
 	}
 }
 
-func evaluarRestantes(lista_vivos []int, lista_jugadores []*jugador) {
-	var num_vivos = len(lista_vivos)
+func evaluarRestantes(lista_vivos []int, lista_jugadores []*jugador) { // Evalua si quedan jugadores suficientes para jugar
+	num_vivos := len(lista_vivos)
 	if num_vivos == 0 {
 		// Mandar mensaje a ¿todos?, no hay ganadores
 		fmt.Println("Todos los jugadores fueron eliminados")
@@ -143,8 +144,31 @@ func evaluarRestantes(lista_vivos []int, lista_jugadores []*jugador) {
 	}
 }
 
-func eliminarJugadorImpar(lista_jugadores []*jugador, ID_eliminado int) {
+func RemoveIndex(s []int, index int) []int { // Elimina la posicion index del slice, codigo de stackoverflow
+	ret := make([]int, 0)
+	ret = append(ret, s[:index]...)
+	return append(ret, s[index+1:]...)
+}
+
+func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int) (new_lista_vivos []int) {
+	index_eliminado := getRandomNum(0, len(lista_vivos))
+	ID_eliminado := lista_vivos[index_eliminado]
 	esEliminado(*lista_jugadores[ID_eliminado])
+	new_lista_vivos = RemoveIndex(lista_vivos, index_eliminado) // Elimina de la lista de vivos al jugador del index que se debe eliminar
+	return new_lista_vivos
+}
+
+func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
+	for i := 0; i < len(lista_vivos); i++ {
+		currentID := lista_vivos[i]
+		if i < len(lista_vivos)/2 {
+			// Mandar mensaje a los jugadores con su equipo asignado
+			lista_jugadores[currentID].equipo_etapa2 = "A"
+		} else {
+			// Mandar mensaje a los jugadores con su equipo asignado
+			lista_jugadores[currentID].equipo_etapa2 = "B"
+		}
+	}
 }
 
 func main() {
@@ -186,7 +210,7 @@ func main() {
 
 	var etapa = 1
 	const max_rondas = 4
-	var contador_rondas int = 0
+	var contador_rondas = 0
 	var en_juego = jugadores_vivos
 
 	// LOOP ETAPA 1
@@ -234,12 +258,19 @@ func main() {
 	}
 	// Chequear si hay jugadores vivos para seguir jugando, y quienes
 	var lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
-	evaluarRestantes(lista_vivos, lista_jugadores)
+	evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
+
+	// Ver si los restantes son impar
+	if len(lista_vivos)%2 == 1 {
+		fmt.Println("Sobrevivientes impares, se eliminará a uno")
+		lista_vivos = eliminarJugadorImpar(lista_jugadores, lista_vivos) // Se elimina uno al azar y retorna la nueva lista de vivos
+	}
 
 	// Inicio de etapa 2
-	// Primero aqui avisa a los jugadores que iniciara la etapa 1 y que manden sus respuestas
-
+	// Primero aqui avisa a los jugadores que iniciara la etapa 2 y que manden sus respuestas
 	etapa = etapa + 1
-	// Ver si los restantes son par
 
+	asignarGrupos(lista_jugadores, lista_vivos)
+	//var grupoA_suma = 0
+	//var grupoB_suma = 0
 }
