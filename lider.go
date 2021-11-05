@@ -28,7 +28,8 @@ type jugador struct {
 	estado            string
 	suma_rptas_etapa1 int
 	equipo_etapa2     string
-	// pareja??
+	nro_pareja_etapa3 int
+	rpta_etapa3       int
 }
 
 func newJugador(ID int, IP string, puerto string) *jugador { // Crea un struct jugador con ID, IP, puerto, etc
@@ -37,7 +38,9 @@ func newJugador(ID int, IP string, puerto string) *jugador { // Crea un struct j
 		IP:                IP,
 		puerto:            puerto,
 		estado:            "vivo",
-		suma_rptas_etapa1: 0}
+		suma_rptas_etapa1: 0,
+		nro_pareja_etapa3: 0,
+		rpta_etapa3:       0}
 	return &player
 }
 
@@ -87,8 +90,13 @@ func jugadoresVivos(lista_jugadores []*jugador, cant_jugadores int, print bool) 
 	return lista_vivos
 }
 
-func mostrarGanadores() { // Muestra por consola a los ganadores
-
+func mostrarGanadores(lista_jugadores []*jugador, cant_jugadores int) { // Muestra por consola a los ganadores y wones ganados
+	// TO DO: Añadir la logica de mostrar los wones
+	for i := 0; i < cant_jugadores; i++ {
+		if lista_jugadores[i].estado == "vivo" {
+			fmt.Println("El jugador:", lista_jugadores[i].ID, "ha ganado el juego del calamar")
+		}
+	}
 }
 
 func revisarJugadas() { // Para preguntar sobre las jugadas historicamente de un determinado jugador
@@ -105,6 +113,7 @@ func mostrarMuerte(ID_player int) { // Muestra por consola cuando muere un jugad
 }
 
 func informarResultadoRonda(muertos_por_ronda []int, pasan_etapa []int) { // Lee los ID de quienes murieron/pasaron y les manda mensaje, tambien al pozo
+	// sirve en etapa 1
 	for i := 0; i < len(muertos_por_ronda); i++ {
 		playerID := muertos_por_ronda[i]
 		// Mandar msj a jugador de ID playerID
@@ -182,6 +191,13 @@ func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int, letra string) 
 	}
 	new_lista_vivos = lista_vivos
 	return new_lista_vivos // Retorna la lista de los vivos cuando ya se eliminó el grupo 'letra'
+}
+
+func Abs(x int) int { // GO solo tiene abs para floats, me complicaba el codigo asi que hice mi propia xd
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func main() {
@@ -356,6 +372,71 @@ func main() {
 	}
 
 	// Inicio de etapa 3
-	// Primero aqui avisa a los jugadores que iniciara la etapa 3 y que manden sus respuestas
+	// Avisa a los jugadores que iniciara la etapa 3
 	etapa = etapa + 1
+
+	// Elige parejas y los informa a los jugadores
+	asigna_parejas := 1 // Las parejas van del 1 hasta el jugadores_vivos/2
+	for i := 0; i < jugadores_vivos; i++ {
+		ID_player1 := lista_vivos[i]
+		i++
+		ID_player2 := lista_vivos[i]
+		// Quedan las parejas asignadas
+		lista_jugadores[ID_player1].nro_pareja_etapa3 = asigna_parejas
+		lista_jugadores[ID_player2].nro_pareja_etapa3 = asigna_parejas
+
+		// Avisar por mensaje a los jugadores su numero de pareja
+		asigna_parejas++
+	}
+
+	// Les pide que manden sus respuestas
+	for i := 0; i < jugadores_vivos; i++ {
+
+		// Recoger primera respuesta que llegue
+		// Guardar el ID de esa respuesta
+
+		// Hardcodeo
+		ID_rpta := 1
+		rpta := 4
+
+		lista_jugadores[ID_rpta].rpta_etapa3 = rpta
+
+	}
+
+	// Lider escoge un numero random entre 1 y 10
+	opt_lider = getRandomNum(1, 10)
+
+	// Procesa sus respuestas, compara resultados entre si y con el lider
+	for nro_pareja := 1; nro_pareja < jugadores_vivos/2; nro_pareja++ {
+		aux_break := 0
+		var vs_pareja []int // Para guardar los ID que componen cada pareja
+
+		// Busca el ID de los integrantes de la pareja nro 'nro_pareja' y los guarda en vs_pareja
+		for i := 0; i < jugadores_vivos; i++ {
+			ID_player := lista_vivos[i]
+			if lista_jugadores[ID_player].nro_pareja_etapa3 == nro_pareja { // Ver si es el num de pareja que se está chequeando
+				vs_pareja = append(vs_pareja, ID_player)
+				aux_break++
+			}
+			if aux_break == 2 { // Por temas de optimizacion para que no recorra toda la lista xdddd
+				break
+			}
+		}
+
+		// Procesa y envia resultados (moriste o no)
+		rpta1 := Abs(opt_lider - lista_jugadores[vs_pareja[0]].rpta_etapa3)
+		rpta2 := Abs(opt_lider - lista_jugadores[vs_pareja[1]].rpta_etapa3)
+
+		if rpta1 > rpta2 { // Pierde rpta1
+			// Avisar al jugador con ID vs_pareja[0] que perdio
+			esEliminado(*lista_jugadores[vs_pareja[0]])
+		} else if rpta1 < rpta2 { // Pierde rpta2
+			// Avisar al jugador con ID vs_pareja[1] que perdio
+			esEliminado(*lista_jugadores[vs_pareja[1]])
+		} // Si no entra a ninguno de los dos es que ambos ganaron, no se elimina a nadie
+	}
+
+	// Entrega ganadores y la cantidad de wones
+	mostrarGanadores(lista_jugadores, cant_jugadores)
+
 }
