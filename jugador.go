@@ -89,6 +89,7 @@ func main() {
 	fmt.Println("PUERTO_JUGADOR", PUERTO_JUGADOR)
 	*/
 
+	// solicitar entrar al juego del calamar
 
 	var etapa = 1 // TO-DO: recibir esto desde Lider
 

@@ -1,9 +1,26 @@
 syntax = "proto3";
-package sd;
-option go_package = "./";
+package t2;
+option go_package =  "./;t2";
 
 message Solicitud {
     string IP = 1;   // IP de jugador  
     int32 PORT = 2;  // puerto jugador
 }
   
+message RespuestaSolicitud {
+    int32 ID = 1; // ID
+}
+
+message Message {
+    string body = 1;
+}
+
+// Interface exported by the server.
+service LiderService {
+    // Simple rpc
+    rpc Unirse(Solicitud) returns (RespuestaSolicitud) {}
+    rpc SayHello(Message) returns (Message) {}
+}
+
+
+
