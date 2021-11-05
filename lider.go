@@ -171,6 +171,19 @@ func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
 	}
 }
 
+func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int, letra string) (new_lista_vivos []int) {
+	for i := 0; i < len(lista_vivos); i++ {
+		currentID := lista_vivos[i]
+		if lista_jugadores[currentID].equipo_etapa2 == letra {
+			// Si el jugador es del grupo 'letra', se elimina
+			esEliminado(*lista_jugadores[currentID])
+			lista_vivos = RemoveIndex(lista_vivos, currentID)
+		}
+	}
+	new_lista_vivos = lista_vivos
+	return new_lista_vivos // Retorna la lista de los vivos cuando ya se eliminó el grupo 'letra'
+}
+
 func main() {
 	// Definiciones iniciales
 
@@ -264,13 +277,85 @@ func main() {
 	if len(lista_vivos)%2 == 1 {
 		fmt.Println("Sobrevivientes impares, se eliminará a uno")
 		lista_vivos = eliminarJugadorImpar(lista_jugadores, lista_vivos) // Se elimina uno al azar y retorna la nueva lista de vivos
+		jugadores_vivos -= 1
 	}
 
 	// Inicio de etapa 2
 	// Primero aqui avisa a los jugadores que iniciara la etapa 2 y que manden sus respuestas
 	etapa = etapa + 1
 
-	asignarGrupos(lista_jugadores, lista_vivos)
-	//var grupoA_suma = 0
-	//var grupoB_suma = 0
+	asignarGrupos(lista_jugadores, lista_vivos) // La mitad de los vivos se van al grupo A, la otra mitad al B (en enunciado no dice como escogerlos)
+	var grupoA_suma = 0
+	var grupoB_suma = 0
+	var len_grupo = jugadores_vivos / 2
+	var paridad_A = false
+	var paridad_B = false
+	// Lider escoge un numero al azar entre el 1 y 4
+	opt_lider := getRandomNum(1, 4)
+	fmt.Println("La opcion del Lider es:", opt_lider)
+
+	for i := 0; i < jugadores_vivos; i++ {
+
+		// Recoger primera respuesta que llegue
+		// Guardar el ID de esa respuesta
+
+		// Hardcodeo
+		ID_rpta := 1
+		rpta := 4
+
+		if lista_jugadores[ID_rpta-1].equipo_etapa2 == "A" {
+			grupoA_suma += rpta
+		} else if lista_jugadores[ID_rpta-1].equipo_etapa2 == "B" {
+			grupoB_suma += rpta
+		} else {
+			// Algo paso que entro un muerto
+			fmt.Println("Recibio a alguien que no tenia un grupo asignado")
+		}
+	}
+
+	if opt_lider%2 == grupoA_suma%2 { // Si tiene la misma paridad, se activa el flag
+		// Activa flag grupo A
+		paridad_A = true
+	}
+	if opt_lider%2 == grupoB_suma%2 {
+		// Activa flag grupo B
+		paridad_B = true
+	}
+
+	// Chequear los resultados de paridad y eliminar en base a ellos
+	if !paridad_A && !paridad_B { // Si ninguno de los dos tiene la paridad del lider, se elimina uno aleatoriamente
+		eleccion := getRandomNum(0, 1) // Si es 0 se elimina A, si es 1 se elimina B
+		if eleccion == 0 {
+			lista_vivos = eliminarGrupo(lista_jugadores, lista_vivos, "A")
+		} else {
+			lista_vivos = eliminarGrupo(lista_jugadores, lista_vivos, "B")
+		}
+		jugadores_vivos -= len_grupo
+	} else if !paridad_A { // La paridad no es la misma, eliminar A
+		lista_vivos = eliminarGrupo(lista_jugadores, lista_vivos, "A")
+		jugadores_vivos -= len_grupo
+
+	} else if !paridad_B { // La paridad no es la misma, eliminar B
+		lista_vivos = eliminarGrupo(lista_jugadores, lista_vivos, "B")
+		jugadores_vivos -= len_grupo
+	}
+	// A estas alturas se elimino un grupo, y si ambos obtienen la misma paridad no se elimino nada ni se restaron los jugadores_vivos
+	// Termino de fase 2
+	// Avisar por mensaje que equipos ganaron
+	// Avisar cantidad y que IDs siguen jugando, ademas de pozo de wones
+
+	// Chequear si hay jugadores vivos para seguir jugando, y quienes
+	lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
+	evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
+
+	// Ver si los restantes son impar
+	if len(lista_vivos)%2 == 1 {
+		fmt.Println("Sobrevivientes impares, se eliminará a uno")
+		lista_vivos = eliminarJugadorImpar(lista_jugadores, lista_vivos) // Se elimina uno al azar y retorna la nueva lista de vivos
+		jugadores_vivos -= 1
+	}
+
+	// Inicio de etapa 3
+	// Primero aqui avisa a los jugadores que iniciara la etapa 3 y que manden sus respuestas
+	etapa = etapa + 1
 }
