@@ -21,6 +21,11 @@ type LiderServiceClient interface {
 	// Simple rpc
 	Unirse(ctx context.Context, in *Solicitud, opts ...grpc.CallOption) (*RespuestaSolicitud, error)
 	SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	// etapas
+	//rpc ProcesarJugada(Jugada) returns (EstadoEtapa) {}
+	ProcesarJugada(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
+	GetResultadosRonda(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*ResultadoJugada, error)
+	EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 }
 
 type liderServiceClient struct {
@@ -49,6 +54,33 @@ func (c *liderServiceClient) SayHello(ctx context.Context, in *Message, opts ...
 	return out, nil
 }
 
+func (c *liderServiceClient) ProcesarJugada(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.LiderService/ProcesarJugada", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liderServiceClient) GetResultadosRonda(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*ResultadoJugada, error) {
+	out := new(ResultadoJugada)
+	err := c.cc.Invoke(ctx, "/t2.LiderService/GetResultadosRonda", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *liderServiceClient) EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.LiderService/EmpezarEtapa", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiderServiceServer is the server API for LiderService service.
 // All implementations must embed UnimplementedLiderServiceServer
 // for forward compatibility
@@ -56,6 +88,11 @@ type LiderServiceServer interface {
 	// Simple rpc
 	Unirse(context.Context, *Solicitud) (*RespuestaSolicitud, error)
 	SayHello(context.Context, *Message) (*Message, error)
+	// etapas
+	//rpc ProcesarJugada(Jugada) returns (EstadoEtapa) {}
+	ProcesarJugada(context.Context, *Jugada) (*Message, error)
+	GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error)
+	EmpezarEtapa(context.Context, *Message) (*Message, error)
 	mustEmbedUnimplementedLiderServiceServer()
 }
 
@@ -68,6 +105,15 @@ func (UnimplementedLiderServiceServer) Unirse(context.Context, *Solicitud) (*Res
 }
 func (UnimplementedLiderServiceServer) SayHello(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedLiderServiceServer) ProcesarJugada(context.Context, *Jugada) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProcesarJugada not implemented")
+}
+func (UnimplementedLiderServiceServer) GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetResultadosRonda not implemented")
+}
+func (UnimplementedLiderServiceServer) EmpezarEtapa(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EmpezarEtapa not implemented")
 }
 func (UnimplementedLiderServiceServer) mustEmbedUnimplementedLiderServiceServer() {}
 
@@ -118,6 +164,60 @@ func _LiderService_SayHello_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiderService_ProcesarJugada_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Jugada)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiderServiceServer).ProcesarJugada(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.LiderService/ProcesarJugada",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiderServiceServer).ProcesarJugada(ctx, req.(*Jugada))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiderService_GetResultadosRonda_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RespuestaSolicitud)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiderServiceServer).GetResultadosRonda(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.LiderService/GetResultadosRonda",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiderServiceServer).GetResultadosRonda(ctx, req.(*RespuestaSolicitud))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _LiderService_EmpezarEtapa_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiderServiceServer).EmpezarEtapa(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.LiderService/EmpezarEtapa",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiderServiceServer).EmpezarEtapa(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiderService_ServiceDesc is the grpc.ServiceDesc for LiderService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -132,6 +232,18 @@ var LiderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SayHello",
 			Handler:    _LiderService_SayHello_Handler,
+		},
+		{
+			MethodName: "ProcesarJugada",
+			Handler:    _LiderService_ProcesarJugada_Handler,
+		},
+		{
+			MethodName: "GetResultadosRonda",
+			Handler:    _LiderService_GetResultadosRonda_Handler,
+		},
+		{
+			MethodName: "EmpezarEtapa",
+			Handler:    _LiderService_EmpezarEtapa_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

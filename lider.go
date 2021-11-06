@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 	"math/rand"
 	"os"
 	"strconv"
@@ -13,6 +14,22 @@ import (
 	"golang.org/x/net/context"
 )
 
+/************** Lock ***************/
+
+// incrementar valor de contador
+func (c *Container) inc(name string) {
+    c.Lock()
+    defer c.Unlock()
+    c.counters[name]++
+}
+
+// reset valor de contador
+func (c *Container) reset(name string) {
+    c.Lock()
+    defer c.Unlock()
+    c.counters[name] = 0
+}
+
 
 /********************************** gRPC **********************************************/
 
@@ -20,11 +37,13 @@ type Server struct {
 	pb.UnimplementedLiderServiceServer
 }
 
+// funcion response hello para debug
 func (s *Server) SayHello(ctx context.Context, in *pb.Message) (*pb.Message, error) {
 	log.Printf("Receive message body from client: %s", in.Body)
 	return &pb.Message{Body: "Hello From the Server!"}, nil
 }
 
+// funcion response para unir jugador al juego
 func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSolicitud, error) {
 	log.Printf("IP de jugador: %s, port: %s", in.IP, in.PORT)
 	
@@ -39,20 +58,86 @@ func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSol
 	return &pb.RespuestaSolicitud{ID: id}, nil
 }
 
+// funcion response procesar jugada de jugador
+func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message, error) {        
+
+	log.Printf("ID de jugador: %d, jugada:  %s", in.ID, in.Numero)
+	
+	// Guardar el ID de esa respuesta
+
+	ID_rpta := in.ID
+	rpta, err := strconv.Atoi(in.Numero)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+	}
+
+	if rpta >= opt_lider {
+		// Jugador eliminado
+		esEliminado(*lista_jugadores[ID_rpta-1])
+		muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
+	} else {
+		// Mandar mensaje que el jugador sigue vivo
+		// Mostrar el numero que lleva acumulado
+		lista_jugadores[ID_rpta-1].suma_rptas_etapa1 += rpta
+		if lista_jugadores[ID_rpta-1].suma_rptas_etapa1 >= 21 { // Si la suma de sus respuestas es >= 21, informar que pasa a la siguiente etapa
+			// Informar que pasa a la siguiente etapa
+			pasan_etapa = append(pasan_etapa, ID_rpta) // Como ya paso, no se calcula en los que faltan
+		}
+	}
+
+	container.inc("cont_req")
+
+	// Registrar su jugada en NameNode
+	
+	return &pb.Message{Body: "OK"}, nil 
+}
+
+// funcion response para resultado de ronda
+func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolicitud) (*pb.ResultadoJugada, error) {
+	id_jugador := in.ID 
+	
+	if container.counters["cont_req"] < en_juego { // si aun no juegan todos los jugadores
+		// Mandar msj a jugador
+		return &pb.ResultadoJugada{Vivo: true, NEXTETAPA: false, WAIT: true}, nil 
+	}
+	
+	/*
+	for container.counters["cont_res"] < en_juego{
+	}
+	*/
+
+	vivo_bool := true
+	next_etapa := false
+
+	// Leer slices e informar quienes pasan o no
+	
+	// sirve en etapa 1
+	for i := 0; i < len(muertos_por_ronda); i++ {
+		playerID := muertos_por_ronda[i]
+		if (playerID == id_jugador){
+			fmt.Println("El jugador", id_jugador, "es eliminado")
+			vivo_bool = false
+			// Mandar msj al pozo para aumentarlo
+		}
+
+		
+	}
+	for i := 0; i < len(pasan_etapa); i++ {
+		playerID := pasan_etapa[i]
+		if (playerID == id_jugador){
+			fmt.Println("El jugador", playerID, " pasa a la siguiente etapa")	
+			next_etapa = true
+			break
+		}
+	}
+
+	container.inc("cont_res")
+
+	// Mandar msj a jugador
+	return &pb.ResultadoJugada{Vivo: vivo_bool, NEXTETAPA: next_etapa, WAIT: false}, nil 
+}
+
 /***************************************************************************************/
-
-/*
-func plus(a int, b int) int {
-
-	return a + b
-}
-
-func main() {
-
-	res := plus(1, 2)
-	fmt.Println("1+2 =", res)
-}
-*/
 
 type jugador struct {
 	ID                int32
@@ -260,6 +345,19 @@ var lista_jugadores []*jugador // Slice de structs con los jugadores
 var jugadores_vivos int
 var jugadores_conectados int
 
+
+// Container para usar Lock
+type Container struct {
+    sync.Mutex
+    counters map[string]int
+}
+var container Container 
+
+var muertos_por_ronda []int32 // Una lista de muertos ([1,4,5,8,16] por ejemplo)
+var pasan_etapa []int32       // Una lista de quienes pasan la etapa, por ronda
+var opt_lider int // opcion del lider de etapa 1
+var en_juego int // jugadores en juego
+
 func main() {
 	// Definiciones iniciales
 
@@ -279,7 +377,6 @@ func main() {
 
 	const wones = 100000000 // 100 millones de wones vale cada jugador
 
-	//var jugadores_vivos int = cant_jugadores
 	jugadores_vivos = cant_jugadores
 
 	go startServer()
@@ -288,48 +385,44 @@ func main() {
 	for jugadores_conectados < cant_jugadores { // esperar hasta que se conecten los jugadores
 	}
 
+	// iniciar container
+	
+	// cont_req: contador para los req de jugadores
+	// cont_res: contador para respuestas de lider
+	container = Container{
+		counters: map[string]int{"cont_req": 0, "cont_res": 0},
+	}
+
 	// Inicio de etapa 1
 	// Primero aqui avisa a los jugadores que iniciara la etapa 1 y que manden sus respuestas
 
 	var etapa = 1
 	const max_rondas = 4
 	var contador_rondas = 0
-	var en_juego = jugadores_vivos
+	en_juego = jugadores_vivos
 
 	// LOOP ETAPA 1
 	// -------------
 	fmt.Println("Inicio de Etapa 1")
 	for contador_rondas < max_rondas {
-
-		var muertos_por_ronda []int // Una lista de muertos ([1,4,5,8,16] por ejemplo)
-		var pasan_etapa []int       // Una lista de quienes pasan la etapa, por ronda
+		
 		// Lider escoge un numero al azar entre el 6 y 10
-		opt_lider := getRandomNum(6, 10)
+		opt_lider = getRandomNum(6, 10)
+		
+		// vaciarlos
+		muertos_por_ronda = nil  // Una lista de muertos ([1,4,5,8,16] por ejemplo)
+		pasan_etapa = nil
+
 		fmt.Println("La opcion del Lider es:", opt_lider)
+		
+		// esperar a que todos los vivos jueguen		
+		container.reset("cont_req")
+		for container.counters["cont_req"] < en_juego{
+		}
 
-		for i := 0; i < en_juego; i++ {
-
-			// Recoger primera respuesta que llegue
-			// Guardar el ID de esa respuesta
-
-			// Hardcodeo
-			ID_rpta := 1
-			rpta := 4
-
-			if rpta >= opt_lider {
-				// Jugador eliminado
-				esEliminado(*lista_jugadores[ID_rpta-1])
-				muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
-			} else {
-				// Mandar mensaje que el jugador sigue vivo
-				// Mostrar el numero que lleva acumulado
-				lista_jugadores[ID_rpta-1].suma_rptas_etapa1 += rpta
-				if lista_jugadores[ID_rpta-1].suma_rptas_etapa1 >= 21 { // Si la suma de sus respuestas es >= 21, informar que pasa a la siguiente etapa
-					// Informar que pasa a la siguiente etapa
-					pasan_etapa = append(pasan_etapa, ID_rpta) // Como ya paso, no se calcula en los que faltan
-				}
-			}
-			// Registrar su jugada en NameNode
+		// esperar a que el lider informe el resultado a jugadores
+		container.reset("cont_res")		
+		for container.counters["cont_res"] < en_juego{
 		}
 
 		jugadores_vivos -= len(muertos_por_ronda)
@@ -337,8 +430,6 @@ func main() {
 		en_juego -= len(pasan_etapa)
 		contador_rondas += 1
 
-		// Leer slices e informar quienes pasan o no
-		informarResultadoRonda(muertos_por_ronda, pasan_etapa)
 	}
 	// Chequear si hay jugadores vivos para seguir jugando, y quienes
 	var lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
