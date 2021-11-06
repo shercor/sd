@@ -6,21 +6,6 @@ import (
 	"strconv"
 )
 
-/*
-import (
-	"fmt"
-	"log"
-	"math/rand"
-	"net"
-	"os"
-	"strconv"
-	"time"
-
-	pb "github.com/shercor/sd/proto"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-)*/
-
 func main() {
 
 	// Recibe un msj con el ID de un jugador muerto y la etapa en la que fue eliminado
@@ -40,7 +25,7 @@ func main() {
 		// o libre? (puede haber mas de un ganador)
 		// AAAAA modificar en caso de
 
-		// HARDCODEO
+		// HARDCODEO, obtener esto con mensajes
 		ID_actual := 1
 		etapa := 1
 
