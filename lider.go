@@ -234,33 +234,7 @@ func Abs(x int) int { // GO solo tiene abs para floats, me complicaba el codigo 
 	return x
 }
 
-
-var cant_jugadores int
-var lista_jugadores []*jugador // Slice de structs con los jugadores
-var jugadores_vivos int
-var jugadores_conectados int
-
-func main() {
-	// Definiciones iniciales
-
-	cant_jugadores = 16
-	jugadores_conectados = 0
-
-	argsWithoutProg := os.Args[1:]
-
-	if len(argsWithoutProg) == 1 {
-		cant_jugadores, err := strconv.Atoi(argsWithoutProg[0])
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(cant_jugadores)
-	}
-
-	const wones = 100000000 // 100 millones de wones vale cada jugador
-
-	//var jugadores_vivos int = cant_jugadores
-	jugadores_vivos = cant_jugadores
-
+func startServer(){
 	/*  Iniciar servidor Lider */
 	fmt.Println("Iniciando servidor Lider...")
 
@@ -277,6 +251,37 @@ func main() {
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+
+var cant_jugadores int
+var lista_jugadores []*jugador // Slice de structs con los jugadores
+var jugadores_vivos int
+var jugadores_conectados int
+
+func main() {
+	// Definiciones iniciales
+
+	cant_jugadores = 16
+	jugadores_conectados = 0
+
+	argsWithoutProg := os.Args[1:]
+
+	if len(argsWithoutProg) == 1 {
+		param, err := strconv.Atoi(argsWithoutProg[0])
+		if err != nil {
+			fmt.Println(err)
+		}
+		cant_jugadores = param
+		fmt.Println(cant_jugadores)
+	}
+
+	const wones = 100000000 // 100 millones de wones vale cada jugador
+
+	//var jugadores_vivos int = cant_jugadores
+	jugadores_vivos = cant_jugadores
+
+	go startServer()
 	
 	// Setup inicial recibiendo los jugadores
 	for jugadores_conectados < cant_jugadores { // esperar hasta que se conecten los jugadores
