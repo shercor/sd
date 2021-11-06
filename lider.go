@@ -162,7 +162,7 @@ func RemoveIndex(s []int, index int) []int { // Elimina la posicion index del sl
 func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int) (new_lista_vivos []int) {
 	index_eliminado := getRandomNum(0, len(lista_vivos))
 	ID_eliminado := lista_vivos[index_eliminado]
-	esEliminado(*lista_jugadores[ID_eliminado])
+	esEliminado(*lista_jugadores[ID_eliminado-1])
 	new_lista_vivos = RemoveIndex(lista_vivos, index_eliminado) // Elimina de la lista de vivos al jugador del index que se debe eliminar
 	return new_lista_vivos
 }
@@ -170,12 +170,13 @@ func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int) (new_li
 func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
+		fmt.Println("Current ID:", currentID)
 		if i < len(lista_vivos)/2 {
 			// Mandar mensaje a los jugadores con su equipo asignado
-			lista_jugadores[currentID].equipo_etapa2 = "A"
+			lista_jugadores[currentID-1].equipo_etapa2 = "A"
 		} else {
 			// Mandar mensaje a los jugadores con su equipo asignado
-			lista_jugadores[currentID].equipo_etapa2 = "B"
+			lista_jugadores[currentID-1].equipo_etapa2 = "B"
 		}
 	}
 }
@@ -183,9 +184,9 @@ func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
 func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int, letra string) (new_lista_vivos []int) {
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
-		if lista_jugadores[currentID].equipo_etapa2 == letra {
+		if lista_jugadores[currentID-1].equipo_etapa2 == letra {
 			// Si el jugador es del grupo 'letra', se elimina
-			esEliminado(*lista_jugadores[currentID])
+			esEliminado(*lista_jugadores[currentID-1])
 			lista_vivos = RemoveIndex(lista_vivos, currentID)
 		}
 	}
@@ -244,6 +245,7 @@ func main() {
 
 	// LOOP ETAPA 1
 	// -------------
+	fmt.Println("Inicio de Etapa 1")
 	for contador_rondas < max_rondas {
 
 		var muertos_por_ronda []int // Una lista de muertos ([1,4,5,8,16] por ejemplo)
@@ -263,7 +265,7 @@ func main() {
 
 			if rpta >= opt_lider {
 				// Jugador eliminado
-				esEliminado(*lista_jugadores[ID_rpta])
+				esEliminado(*lista_jugadores[ID_rpta-1])
 				muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
 			} else {
 				// Mandar mensaje que el jugador sigue vivo
@@ -298,6 +300,7 @@ func main() {
 
 	// Inicio de etapa 2
 	// Primero aqui avisa a los jugadores que iniciara la etapa 2 y que manden sus respuestas
+	fmt.Println("Inicio de Etapa 2")
 	etapa = etapa + 1
 
 	asignarGrupos(lista_jugadores, lista_vivos) // La mitad de los vivos se van al grupo A, la otra mitad al B (en enunciado no dice como escogerlos)
@@ -373,6 +376,7 @@ func main() {
 
 	// Inicio de etapa 3
 	// Avisa a los jugadores que iniciara la etapa 3
+	fmt.Println("Inicio de Etapa 3")
 	etapa = etapa + 1
 
 	// Elige parejas y los informa a los jugadores
@@ -382,8 +386,8 @@ func main() {
 		i++
 		ID_player2 := lista_vivos[i]
 		// Quedan las parejas asignadas
-		lista_jugadores[ID_player1].nro_pareja_etapa3 = asigna_parejas
-		lista_jugadores[ID_player2].nro_pareja_etapa3 = asigna_parejas
+		lista_jugadores[ID_player1-1].nro_pareja_etapa3 = asigna_parejas
+		lista_jugadores[ID_player2-1].nro_pareja_etapa3 = asigna_parejas
 
 		// Avisar por mensaje a los jugadores su numero de pareja
 		asigna_parejas++
@@ -399,7 +403,7 @@ func main() {
 		ID_rpta := 1
 		rpta := 4
 
-		lista_jugadores[ID_rpta].rpta_etapa3 = rpta
+		lista_jugadores[ID_rpta-1].rpta_etapa3 = rpta
 
 	}
 
@@ -414,7 +418,7 @@ func main() {
 		// Busca el ID de los integrantes de la pareja nro 'nro_pareja' y los guarda en vs_pareja
 		for i := 0; i < jugadores_vivos; i++ {
 			ID_player := lista_vivos[i]
-			if lista_jugadores[ID_player].nro_pareja_etapa3 == nro_pareja { // Ver si es el num de pareja que se está chequeando
+			if lista_jugadores[ID_player-1].nro_pareja_etapa3 == nro_pareja { // Ver si es el num de pareja que se está chequeando
 				vs_pareja = append(vs_pareja, ID_player)
 				aux_break++
 			}
@@ -424,15 +428,17 @@ func main() {
 		}
 
 		// Procesa y envia resultados (moriste o no)
-		rpta1 := Abs(opt_lider - lista_jugadores[vs_pareja[0]].rpta_etapa3)
-		rpta2 := Abs(opt_lider - lista_jugadores[vs_pareja[1]].rpta_etapa3)
+		rpta1 := Abs(opt_lider - lista_jugadores[vs_pareja[0]-1].rpta_etapa3)
+		rpta2 := Abs(opt_lider - lista_jugadores[vs_pareja[1]-1].rpta_etapa3)
+		fmt.Println("players:", vs_pareja[0], "VS", vs_pareja[1])
+		fmt.Println(rpta1, "VS", rpta2)
 
 		if rpta1 > rpta2 { // Pierde rpta1
 			// Avisar al jugador con ID vs_pareja[0] que perdio
-			esEliminado(*lista_jugadores[vs_pareja[0]])
+			esEliminado(*lista_jugadores[vs_pareja[0]-1])
 		} else if rpta1 < rpta2 { // Pierde rpta2
 			// Avisar al jugador con ID vs_pareja[1] que perdio
-			esEliminado(*lista_jugadores[vs_pareja[1]])
+			esEliminado(*lista_jugadores[vs_pareja[1]-1])
 		} // Si no entra a ninguno de los dos es que ambos ganaron, no se elimina a nadie
 	}
 
