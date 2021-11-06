@@ -3,7 +3,6 @@ package main
 import (
 	pb "github.com/shercor/sd/proto"
 	"log"
-
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
