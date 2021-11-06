@@ -6,7 +6,21 @@ import (
 	"os"
 	"strconv"
 	"time"
+	pb "github.com/shercor/sd/proto"
+	"log"
+	"net"
+	"google.golang.org/grpc"
+	"golang.org/x/net/context"
 )
+
+type Server struct {
+	pb.UnimplementedLiderServiceServer
+}
+
+func (s *Server) SayHello(ctx context.Context, in *pb.Message) (*pb.Message, error) {
+	log.Printf("Receive message body from client: %s", in.Body)
+	return &pb.Message{Body: "Hello From the Server!"}, nil
+}
 
 /*
 func plus(a int, b int) int {
@@ -220,6 +234,25 @@ func main() {
 	var lista_jugadores []*jugador // Slice de structs con los jugadores
 
 	var jugadores_vivos int = cant_jugadores
+
+	/*  Iniciar servidor Lider */
+	fmt.Println("Iniciando servidor Lider")
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	s := Server{}
+
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterLiderServiceServer(grpcServer, &s)
+	
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %s", err)
+	}
+
 
 	// Setup inicial recibiendo los jugadores
 	for i := 0; i < cant_jugadores; i++ {
