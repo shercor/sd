@@ -142,6 +142,7 @@ func esEliminado(jugador_eliminado jugador) { // Cuando la logica detecta que el
 }
 
 func mostrarMuerte(ID_player int32) { // Muestra por consola cuando muere un jugador
+	// enviar notificacion de que perdio
 	fmt.Println("El jugador:", ID_player, "ha sido eliminado")
 }
 

@@ -3,6 +3,8 @@ import (
     "fmt"
     "os"
 	"bufio"
+	"net"
+	"strings"
 	//"net"
 	//"strconv"
 	//"math/rand"
@@ -30,6 +32,7 @@ func etapa_tres(bot bool) int {
 	return 0
 }
 
+var my_id int32 // ID jugador
 
 func main() {
 	argsWithoutProg := os.Args[1:]
@@ -97,8 +100,23 @@ func main() {
 
 	// conectar con lider
 
+	// obtener mi IP, se hace una conexion UDP a DNS para obtener mi IP
+	c_temp, err := net.Dial("udp", "8.8.8.8:80")
+    if err != nil {
+		log.Fatalf("Error %s", err)
+	}
+
+    localAddr := c_temp.LocalAddr().(*net.UDPAddr).String()
+	c_temp.Close()
+
+	fmt.Println(strings.Split(localAddr, ":")[0])
+
+	my_IP := strings.Split(localAddr, ":")[0]
+	my_PORT := strings.Split(localAddr, ":")[1]
+
+	
 	var conn *grpc.ClientConn
-	conn, err := grpc.Dial(":9000", grpc.WithInsecure())
+	conn, err = grpc.Dial(":9000", grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
 	}
@@ -116,11 +134,12 @@ func main() {
 	*/
 	
 	// solicitar unirse al juego del calamara 
-	response, err := c.Unirse(context.Background(), &pb.Solicitud{IP: "123", PORT: "456"})
+	response, err := c.Unirse(context.Background(), &pb.Solicitud{IP: my_IP, PORT: my_PORT})
 	if err != nil {
 		log.Fatalf("Error when calling Unirse: %s", err)
 	}
-	log.Printf("Response from server: %s", response.ID)
+	my_id = response.ID
+	log.Printf("ID asignado por Lider: %s", response.ID)
 	
 	/*******************************************************************/
 
