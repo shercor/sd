@@ -4,7 +4,7 @@ option go_package =  "./;t2";
 
 message Solicitud {
     string IP = 1;   // IP de jugador  
-    int32 PORT = 2;  // puerto jugador
+    string PORT = 2;  // puerto jugador
 }
   
 message RespuestaSolicitud {

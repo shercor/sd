@@ -95,8 +95,6 @@ func main() {
 
 	// solicitar entrar al juego del calamar
 
-	var etapa = 1 // TO-DO: recibir esto desde Lider
-
 	// conectar con lider
 
 	var conn *grpc.ClientConn
@@ -108,14 +106,25 @@ func main() {
 
 	c := pb.NewLiderServiceClient(conn)
 
+	/*
+	// request: mensaje de saludo
 	response, err := c.SayHello(context.Background(), &pb.Message{Body: "Hello From Client!"})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}
 	log.Printf("Response from server: %s", response.Body)
-
+	*/
+	
+	// solicitar unirse al juego del calamara 
+	response, err := c.Unirse(context.Background(), &pb.Solicitud{IP: "123", PORT: "456"})
+	if err != nil {
+		log.Fatalf("Error when calling Unirse: %s", err)
+	}
+	log.Printf("Response from server: %s", response.ID)
+	
 	/*******************************************************************/
 
+	var etapa = 1 
 	for alive {
 		fmt.Println("-----------Vivo----------")
 		switch etapa {

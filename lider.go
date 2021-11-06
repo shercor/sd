@@ -13,6 +13,9 @@ import (
 	"golang.org/x/net/context"
 )
 
+
+/********************************** gRPC **********************************************/
+
 type Server struct {
 	pb.UnimplementedLiderServiceServer
 }
@@ -21,6 +24,22 @@ func (s *Server) SayHello(ctx context.Context, in *pb.Message) (*pb.Message, err
 	log.Printf("Receive message body from client: %s", in.Body)
 	return &pb.Message{Body: "Hello From the Server!"}, nil
 }
+
+func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSolicitud, error) {
+	log.Printf("IP de jugador: %s, port: %s", in.IP, in.PORT)
+	
+	// append jugador a lista de jugadores
+	var id int32
+	id = int32(jugadores_conectados) + 1
+	jugadores_conectados = jugadores_conectados + 1
+
+	lista_jugadores = append(lista_jugadores, newJugador(id, in.IP, in.PORT)) // Jugador 1, 2, 3, ..., 16
+
+	log.Printf("Jugadores conectados: %d", jugadores_conectados)
+	return &pb.RespuestaSolicitud{ID: id}, nil
+}
+
+/***************************************************************************************/
 
 /*
 func plus(a int, b int) int {
@@ -36,7 +55,7 @@ func main() {
 */
 
 type jugador struct {
-	ID                int
+	ID                int32
 	IP                string
 	puerto            string
 	estado            string
@@ -46,7 +65,7 @@ type jugador struct {
 	rpta_etapa3       int
 }
 
-func newJugador(ID int, IP string, puerto string) *jugador { // Crea un struct jugador con ID, IP, puerto, etc
+func newJugador(ID int32, IP string, puerto string) *jugador { // Crea un struct jugador con ID, IP, puerto, etc
 	player := jugador{
 		ID:                ID,
 		IP:                IP,
@@ -92,7 +111,7 @@ func informarPozo() { // Agrega 100 millones a Pozo cuando un jugador muere
 
 }
 
-func jugadoresVivos(lista_jugadores []*jugador, cant_jugadores int, print bool) (lista_vivos []int) { // Muestra por consola a los jugadores vivos al término de cada etapa
+func jugadoresVivos(lista_jugadores []*jugador, cant_jugadores int, print bool) (lista_vivos []int32) { // Muestra por consola a los jugadores vivos al término de cada etapa
 	for i := 0; i < cant_jugadores; i++ {
 		if lista_jugadores[i].estado == "vivo" {
 			if print {
@@ -122,7 +141,7 @@ func esEliminado(jugador_eliminado jugador) { // Cuando la logica detecta que el
 	mostrarMuerte(jugador_eliminado.ID) // Printea por consola quien murio
 }
 
-func mostrarMuerte(ID_player int) { // Muestra por consola cuando muere un jugador
+func mostrarMuerte(ID_player int32) { // Muestra por consola cuando muere un jugador
 	fmt.Println("El jugador:", ID_player, "ha sido eliminado")
 }
 
@@ -144,7 +163,7 @@ func informarResultadoRonda(muertos_por_ronda []int, pasan_etapa []int) { // Lee
 	}
 }
 
-func evaluarRestantes(lista_vivos []int, lista_jugadores []*jugador) { // Evalua si quedan jugadores suficientes para jugar
+func evaluarRestantes(lista_vivos []int32, lista_jugadores []*jugador) { // Evalua si quedan jugadores suficientes para jugar
 	num_vivos := len(lista_vivos)
 	if num_vivos == 0 {
 		// Mandar mensaje a ¿todos?, no hay ganadores
@@ -167,21 +186,21 @@ func evaluarRestantes(lista_vivos []int, lista_jugadores []*jugador) { // Evalua
 	}
 }
 
-func RemoveIndex(s []int, index int) []int { // Elimina la posicion index del slice, codigo de stackoverflow
-	ret := make([]int, 0)
+func RemoveIndex(s []int32, index int32) []int32 { // Elimina la posicion index del slice, codigo de stackoverflow
+	ret := make([]int32, 0)
 	ret = append(ret, s[:index]...)
 	return append(ret, s[index+1:]...)
 }
 
-func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int) (new_lista_vivos []int) {
+func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int32) (new_lista_vivos []int32) {
 	index_eliminado := getRandomNum(0, len(lista_vivos))
 	ID_eliminado := lista_vivos[index_eliminado]
 	esEliminado(*lista_jugadores[ID_eliminado])
-	new_lista_vivos = RemoveIndex(lista_vivos, index_eliminado) // Elimina de la lista de vivos al jugador del index que se debe eliminar
+	new_lista_vivos = RemoveIndex(lista_vivos, int32(index_eliminado)) // Elimina de la lista de vivos al jugador del index que se debe eliminar
 	return new_lista_vivos
 }
 
-func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
+func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int32) {
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
 		if i < len(lista_vivos)/2 {
@@ -194,7 +213,7 @@ func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int) {
 	}
 }
 
-func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int, letra string) (new_lista_vivos []int) {
+func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int32, letra string) (new_lista_vivos []int32) {
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
 		if lista_jugadores[currentID].equipo_etapa2 == letra {
@@ -214,10 +233,18 @@ func Abs(x int) int { // GO solo tiene abs para floats, me complicaba el codigo 
 	return x
 }
 
+
+var cant_jugadores int
+var lista_jugadores []*jugador // Slice de structs con los jugadores
+var jugadores_vivos int
+var jugadores_conectados int
+
 func main() {
 	// Definiciones iniciales
 
-	cant_jugadores := 16
+	cant_jugadores = 16
+	jugadores_conectados = 0
+
 	argsWithoutProg := os.Args[1:]
 
 	if len(argsWithoutProg) == 1 {
@@ -229,42 +256,29 @@ func main() {
 	}
 
 	const wones = 100000000 // 100 millones de wones vale cada jugador
-	//var lista_jugadores [cant_jugadores]*jugador // Deprecado: Lista de structs con los jugadores
-	var lista_jugadores []*jugador // Slice de structs con los jugadores
 
-	var jugadores_vivos int = cant_jugadores
+	//var jugadores_vivos int = cant_jugadores
+	jugadores_vivos = cant_jugadores
 
 	/*  Iniciar servidor Lider */
-	fmt.Println("Iniciando servidor Lider")
+	fmt.Println("Iniciando servidor Lider...")
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
+	}else{
+		log.Printf("... listen exitoso")
 	}
 
 	s := Server{}
-
 	grpcServer := grpc.NewServer()
-
 	pb.RegisterLiderServiceServer(grpcServer, &s)
-	
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
-
-
+	
 	// Setup inicial recibiendo los jugadores
-	for i := 0; i < cant_jugadores; i++ {
-
-		// Aqui espera a una conexion y cuando la recibe la asigna
-		// recibirPeticion()
-		// Guardar la IP y puerto recibidos
-
-		//lista_jugadores[i] = newJugador(i+1, "ip", "puerto") // Deprecado.
-		lista_jugadores = append(lista_jugadores, newJugador(i+1, "ip", "puerto")) // Jugador 1, 2, 3, ..., 16
-
-		// Aqui responde al jugador con el ID asignado
-
+	for jugadores_conectados < cant_jugadores { // esperar hasta que se conecten los jugadores
 	}
 
 	// Inicio de etapa 1
@@ -442,7 +456,7 @@ func main() {
 	// Procesa sus respuestas, compara resultados entre si y con el lider
 	for nro_pareja := 1; nro_pareja < jugadores_vivos/2; nro_pareja++ {
 		aux_break := 0
-		var vs_pareja []int // Para guardar los ID que componen cada pareja
+		var vs_pareja []int32 // Para guardar los ID que componen cada pareja
 
 		// Busca el ID de los integrantes de la pareja nro 'nro_pareja' y los guarda en vs_pareja
 		for i := 0; i < jugadores_vivos; i++ {
