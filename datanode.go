@@ -17,8 +17,15 @@ func main() {
 	ID_actual := 1
 	etapa := 1
 	jugada := 5
+	ronda := 1 // RONDA SOLO SE MANDA EN ETAPA 1 o de lo contrario mandar siempre con valor 0 (igual no se usará xd)
 
-	nametxt := "Jugador_" + strconv.Itoa(ID_actual) + "__Etapa_" + strconv.Itoa(etapa) + ".txt"
+	nametxt := ""
+
+	if etapa == 1 { // Si es la etapa 1, se creara un archivo para cada ronda, jugador_5__etapa_1__ronda_2.txt por ejemplo
+		nametxt = "Jugador_" + strconv.Itoa(ID_actual) + "__Etapa_" + strconv.Itoa(etapa) + "__Ronda_" + strconv.Itoa(ronda) + ".txt"
+	} else {
+		nametxt = "Jugador_" + strconv.Itoa(ID_actual) + "__Etapa_" + strconv.Itoa(etapa) + ".txt"
+	}
 
 	f, _ := os.Create(nametxt)
 
