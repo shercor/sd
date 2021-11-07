@@ -78,11 +78,17 @@ func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message
 		muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
 	} else {
 		// Mandar mensaje que el jugador sigue vivo
-		// Mostrar el numero que lleva acumulado (TO-DO)
 		lista_jugadores[ID_rpta-1].suma_rptas_etapa1 += rpta
 		if lista_jugadores[ID_rpta-1].suma_rptas_etapa1 >= 21 { // Si la suma de sus respuestas es >= 21, informar que pasa a la siguiente etapa
 			// Informar que pasa a la siguiente etapa
 			pasan_etapa = append(pasan_etapa, ID_rpta) // Como ya paso, no se calcula en los que faltan
+		}
+
+		// eliminar jugadores que en la 4ta ronda no alcacen 21
+		if (contador_rondas == 3 && lista_jugadores[ID_rpta-1].suma_rptas_etapa1 < 21 ){
+			// Jugador eliminado
+			esEliminado(*lista_jugadores[ID_rpta-1])
+			muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
 		}
 	}
 
@@ -337,7 +343,7 @@ func startServer(){
 	}
 }
 
-/* variables globales */
+/******* variables globales ***************/
 var cant_jugadores int
 var lista_jugadores []*jugador // Slice de structs con los jugadores
 var jugadores_vivos int
@@ -357,6 +363,9 @@ var en_juego int // jugadores en juego
 var flag_next_etapa bool  // flag para empezar siguiente etapa
 var notificar_ganador bool // flag para notificar ganador
 
+var contador_rondas int // contador de ronda para etapa 1
+
+/************** Funcion main ***************/
 func main() {
 	// Definiciones iniciales
 
@@ -397,7 +406,7 @@ func main() {
 	flag_next_etapa = false
 	var etapa = 1
 	const max_rondas = 4
-	var contador_rondas = 0
+	contador_rondas = 0
 	en_juego = jugadores_vivos
 
 	/******************** LOOP ETAPA 1 ********************************/
