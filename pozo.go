@@ -15,6 +15,7 @@ func failOnError(err error, msg string) { // Para errores
 	}
 }
 
+// en el lider debe ser
 /* ----- ESTE TROZO DE CODIGO DEBE IR EN EL JUGADOR, EN LA PARTE DONDE PREGUNTA AL POZO CUANTO DINERO HAY -------
 
 // SETUP RABBITMQ

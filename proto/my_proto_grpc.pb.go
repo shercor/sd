@@ -22,7 +22,6 @@ type LiderServiceClient interface {
 	Unirse(ctx context.Context, in *Solicitud, opts ...grpc.CallOption) (*RespuestaSolicitud, error)
 	SayHello(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 	// etapas
-	//rpc ProcesarJugada(Jugada) returns (EstadoEtapa) {}
 	ProcesarJugada(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
 	GetResultadosRonda(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*ResultadoJugada, error)
 	EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
@@ -89,7 +88,6 @@ type LiderServiceServer interface {
 	Unirse(context.Context, *Solicitud) (*RespuestaSolicitud, error)
 	SayHello(context.Context, *Message) (*Message, error)
 	// etapas
-	//rpc ProcesarJugada(Jugada) returns (EstadoEtapa) {}
 	ProcesarJugada(context.Context, *Jugada) (*Message, error)
 	GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error)
 	EmpezarEtapa(context.Context, *Message) (*Message, error)

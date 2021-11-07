@@ -23,7 +23,7 @@ message Jugada {
 message ResultadoJugada {
     bool vivo = 1;
     bool NEXTETAPA = 2;
-    bool WAIT = 3; // esperar a otros jugadores
+    bool WAIT = 3; // flag esperar a otros jugadores
 }
 
 // Interface exported by the server.
@@ -33,9 +33,8 @@ service LiderService {
     rpc SayHello(Message) returns (Message) {} // para debug
     
     // etapas
-    //rpc ProcesarJugada(Jugada) returns (EstadoEtapa) {}
-    rpc ProcesarJugada(Jugada) returns (Message) {}
-    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {}
+    rpc ProcesarJugada(Jugada) returns (Message) {} // procesar jugada en Lider
+    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {} // obtener resultado de ronda 
 
     rpc EmpezarEtapa(Message) returns (Message) {} // para que esperen los jugadores a que empiece la suguiente etapa
 }

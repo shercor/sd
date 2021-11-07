@@ -231,7 +231,7 @@ type ResultadoJugada struct {
 
 	Vivo      bool `protobuf:"varint,1,opt,name=vivo,proto3" json:"vivo,omitempty"`
 	NEXTETAPA bool `protobuf:"varint,2,opt,name=NEXTETAPA,proto3" json:"NEXTETAPA,omitempty"`
-	WAIT      bool `protobuf:"varint,3,opt,name=WAIT,proto3" json:"WAIT,omitempty"` // esperar a otros jugadores
+	WAIT      bool `protobuf:"varint,3,opt,name=WAIT,proto3" json:"WAIT,omitempty"` // flag esperar a otros jugadores
 }
 
 func (x *ResultadoJugada) Reset() {
