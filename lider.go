@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 	"bufio"
+	"strings"
 	pb "github.com/shercor/sd/proto"
 	"log"
 	"net"
@@ -244,30 +245,10 @@ func newJugador(ID int32, IP string, puerto string) *jugador { // Crea un struct
 	return &player
 }
 
-func obtenerNumJugadores() { // Parte del codigo Alvaro para obtener el num de jugadores
-	argsWithoutProg := os.Args[1:]
-	//var n_jugadores = 16
-	if len(argsWithoutProg) == 1 {
-		n_jugadores, err := strconv.Atoi(argsWithoutProg[0])
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(n_jugadores)
-	}
-}
-
 func getRandomNum(min, max int) (result int) {
 	rand.Seed(time.Now().UnixNano())
 	result = rand.Intn(max-min+1) + min
 	return result
-}
-
-func recibirPeticion() { // Recibe peticion para jugar, viene desde un jugador
-
-}
-
-func recibirJugada() { // Recibe la jugada de un jugador en una cierta etapa
-
 }
 
 func informarJugadas() { // Informa a NameNode cada vez que un jugador hace una jugada
@@ -428,6 +409,24 @@ func startServer(){
 	}
 }
 
+func consultarNameNode(){
+	fmt.Println("¿Consultar jugadas de jugador? (y/n)")
+	reader := bufio.NewReader(os.Stdin)
+	char, _, err := reader.ReadRune()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	eleccion:= ""
+	if (char == 'y'){
+		fmt.Println("Elija el ID de jugador: ")
+		reader := bufio.NewReader(os.Stdin)
+		eleccion, _ = reader.ReadString('\n')
+		eleccion = strings.TrimSuffix(eleccion, "\n")
+		// TO-DO: gRPC a Name Node 
+	}
+}
+
 /******* variables globales ***************/
 var cant_jugadores int
 var lista_jugadores []*jugador // Slice de structs con los jugadores
@@ -547,6 +546,7 @@ func main() {
 	resultado_etapa := evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
 	if resultado_etapa == 0 { // no hay jugadores en pie
 		fmt.Println("Terminando juego del calamar sin ganadores.")
+		consultarNameNode()
 		fmt.Println("Cerrando proceso lider.")
 		return
 	}else if resultado_etapa == 2{ // un solo jugador en pie, el ganador 
@@ -557,10 +557,13 @@ func main() {
 		container.reset("cont_res")		
 		for container.counters["cont_res"] < 1 {
 		}
+		consultarNameNode()
 		fmt.Println("Cerrando proceso lider.")
 		return 
 	}
 
+	
+	consultarNameNode()
 	fmt.Println("¿Continuar a la siguiente etapa? (y/n)")
 
 	reader := bufio.NewReader(os.Stdin)
@@ -662,6 +665,7 @@ func main() {
 	if resultado_etapa == 0 { // no hay jugadores en pie
 		fmt.Println("Terminando juego del calamar sin ganadores.")
 		fmt.Println("Cerrando proceso lider.")
+		consultarNameNode()
 		return
 	}else if resultado_etapa == 2{ // un solo jugador en pie, el ganador 
 		fmt.Println("Notificando ganador...")
@@ -670,9 +674,12 @@ func main() {
 		container.reset("cont_res")		
 		for container.counters["cont_res"] < 1 {
 		}
+		consultarNameNode()
 		fmt.Println("Cerrando proceso lider.")
 		return 
 	}
+
+	consultarNameNode()
 	fmt.Println("¿Continuar a la siguiente etapa? (y/n)")
 	reader = bufio.NewReader(os.Stdin)
 	char, _, err = reader.ReadRune()
@@ -794,7 +801,8 @@ func main() {
 	
 	// Entrega ganadores y la cantidad de wones
 	mostrarGanadores(cant_jugadores) 
-
+	
+	consultarNameNode()
 	fmt.Println("Proceso lider finalizado.")
 	return
 
