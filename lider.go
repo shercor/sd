@@ -51,6 +51,7 @@ func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSol
 	// append jugador a lista de jugadores
 	var id int32
 	id = int32(jugadores_conectados) + 1
+	fmt.Println("ID ASIGNADA: ", id)
 	jugadores_conectados = jugadores_conectados + 1
 
 	lista_jugadores = append(lista_jugadores, newJugador(id, in.IP, in.PORT)) // Jugador 1, 2, 3, ..., 16
@@ -73,7 +74,8 @@ func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message
 
 	if rpta >= opt_lider {
 		// Jugador eliminado
-		esEliminado(*lista_jugadores[ID_rpta-1])
+		//esEliminado(*lista_jugadores[ID_rpta-1])
+		esEliminado(ID_rpta-1)
 		muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
 	} else {
 		// Mandar mensaje que el jugador sigue vivo
@@ -86,7 +88,8 @@ func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message
 		// eliminar jugadores que en la 4ta ronda no alcacen 21
 		if (contador_rondas == 3 && lista_jugadores[ID_rpta-1].suma_rptas_etapa1 < 21 ){
 			// Jugador eliminado
-			esEliminado(*lista_jugadores[ID_rpta-1])
+			//esEliminado(*lista_jugadores[ID_rpta-1])
+			esEliminado(ID_rpta-1)
 			muertos_por_ronda = append(muertos_por_ronda, ID_rpta) // Añadido a la lista de muertos
 		}
 	}
@@ -97,7 +100,7 @@ func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message
 	return &pb.Message{Body: "OK"}, nil 
 }
 
-// funcion response procesar jugada de jugador en etapa 1
+// funcion response procesar jugada de jugador en etapa 2
 func (s *Server) ProcesarJugadaDos(ctx context.Context, in *pb.Jugada) (*pb.Message, error) {
 	log.Printf("ID de jugador: %d, jugada:  %s", in.ID, in.Numero)
 	
@@ -124,6 +127,24 @@ func (s *Server) ProcesarJugadaDos(ctx context.Context, in *pb.Jugada) (*pb.Mess
 	return &pb.Message{Body: "OK"}, nil 
 }
 
+// funcion response procesar jugada de jugador en etapa 3
+func (s *Server) ProcesarJugadaTres(ctx context.Context, in *pb.Jugada) (*pb.Message, error) {
+	log.Printf("ID de jugador: %d, jugada:  %s", in.ID, in.Numero)
+	// Guardar el ID de esa respuesta
+	ID_rpta := in.ID
+	rpta, err := strconv.Atoi(in.Numero)
+	if err != nil {
+		log.Fatalf("Error: %s", err)
+	}
+
+	lista_jugadores[ID_rpta-1].rpta_etapa3 = rpta
+
+	container.inc("cont_req")
+	// Registrar su jugada en NameNode
+
+	return &pb.Message{Body: "OK"}, nil 
+}
+
 // funcion response para resultado de ronda (etapa 1)
 func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolicitud) (*pb.ResultadoJugada, error) {
 	id_jugador := in.ID 
@@ -143,6 +164,9 @@ func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolic
 		playerID := muertos_por_ronda[i]
 		if (playerID == id_jugador){
 			fmt.Println("El jugador", id_jugador, "es eliminado")
+			lista_jugadores[id_jugador-1].estado = "muerto"
+
+
 			vivo_bool = false
 			// Mandar msj al pozo para aumentarlo
 		}
@@ -255,8 +279,10 @@ func informarPozo() { // Agrega 100 millones a Pozo cuando un jugador muere
 
 }
 
-func jugadoresVivos(lista_jugadores []*jugador, cant_jugadores int, print bool) (lista_vivos []int32) { // Muestra por consola a los jugadores vivos al término de cada etapa
+func jugadoresVivos(cant_jugadores int, print bool) (lista_vivos []int32) { // Muestra por consola a los jugadores vivos al término de cada etapa
+	
 	for i := 0; i < cant_jugadores; i++ {
+		fmt.Println("-> ", lista_jugadores[i].ID, lista_jugadores[i].estado)
 		if lista_jugadores[i].estado == "vivo" {
 			if print {
 				fmt.Println("El jugador:", lista_jugadores[i].ID, "está vivo")
@@ -267,24 +293,28 @@ func jugadoresVivos(lista_jugadores []*jugador, cant_jugadores int, print bool) 
 	return lista_vivos
 }
 
-func mostrarGanadores(lista_jugadores []*jugador, cant_jugadores int) { // Muestra por consola a los ganadores y wones ganados
+func mostrarGanadores(cant_jugadores int) { // Muestra por consola a los ganadores y wones ganados
 	// TO DO: Añadir la logica de mostrar los wones
 	for i := 0; i < cant_jugadores; i++ {
 		if lista_jugadores[i].estado == "vivo" {
 			fmt.Println("El jugador:", lista_jugadores[i].ID, "ha ganado el juego del calamar")
 		}
 	}
-	// TO-DO: notificar con el mensaje a ganador con el parametro GANADOR
 }
 
 func revisarJugadas() { // Para preguntar sobre las jugadas historicamente de un determinado jugador
 
 }
 
-func esEliminado(jugador_eliminado jugador) { // Cuando la logica detecta que el jugador muere, avisa al jugador
+func esEliminado(index int32) { // Cuando la logica detecta que el jugador muere, avisa al jugador
+	/*
 	jugador_eliminado.estado = "muerto"
 	por_eliminar = append(por_eliminar, jugador_eliminado.ID)
 	mostrarMuerte(jugador_eliminado.ID) // Printea por consola quien murio
+	*/
+	lista_jugadores[index].estado = "muerto"
+	por_eliminar = append(por_eliminar, lista_jugadores[index].ID)
+	mostrarMuerte(lista_jugadores[index].ID) // Printea por consola quien murio
 }
 
 func mostrarMuerte(ID_player int32) { // Muestra por consola cuando muere un jugador
@@ -333,8 +363,10 @@ func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int32) (new_
 	fmt.Println(index_eliminado)
 	//index_eliminado = 3
 	ID_eliminado := lista_vivos[index_eliminado]
-	esEliminado(*lista_jugadores[ID_eliminado-1])
-	new_lista_vivos = RemoveIndex(lista_vivos, int32(index_eliminado) ) // Elimina de la lista de vivos al jugador del index que se debe eliminar
+	//esEliminado(*lista_jugadores[ID_eliminado-1])
+	esEliminado(ID_eliminado-1)
+	//new_lista_vivos = RemoveIndex(lista_vivos, int32(index_eliminado) ) // Elimina de la lista de vivos al jugador del index que se debe eliminar
+	new_lista_vivos = jugadoresVivos(cant_jugadores, false)
 	return new_lista_vivos // slice con el jugador eliminado
 }
 
@@ -352,19 +384,22 @@ func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int32) {
 }
 
 func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int32, letra string) (new_lista_vivos []int32) {
-
+	fmt.Println("Antes: ", lista_vivos)
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
 		fmt.Println(lista_jugadores[currentID-1].equipo_etapa2, letra)
 		if lista_jugadores[currentID-1].equipo_etapa2 == letra {
 			fmt.Println("Procesando eliminacion")
 			// Si el jugador es del grupo 'letra', se elimina
-			esEliminado(*lista_jugadores[currentID-1])
+			//esEliminado(*lista_jugadores[currentID-1])
+			esEliminado(currentID-1)
 			//lista_vivos = RemoveIndex(lista_vivos, int32(i))
 		}
 	}
 
-	new_lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
+	new_lista_vivos = jugadoresVivos(cant_jugadores, false)
+	fmt.Println("Despues: ", new_lista_vivos)
+
 	return new_lista_vivos // Retorna la lista de los vivos cuando ya se eliminó el grupo 'letra'
 }
 
@@ -468,6 +503,14 @@ func main() {
 	contador_rondas = 0
 	en_juego = jugadores_vivos
 
+	// esperar notificar a todos los jugadores
+	flag_next_etapa = true
+	container.reset("cont_res")		
+	for container.counters["cont_res"] < cant_jugadores{
+		//fmt.Println(container.counters["cont_res"], cant_jugadores)
+	}
+	flag_next_etapa = false
+
 	/******************** LOOP ETAPA 1 ********************************/
 	fmt.Println("Inicio de Etapa 1")
 	for contador_rondas < max_rondas {
@@ -501,7 +544,7 @@ func main() {
 	/********************************************************************/
 
 	// Chequear si hay jugadores vivos para seguir jugando, y quienes
-	var lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
+	var lista_vivos = jugadoresVivos(cant_jugadores, false)
 	resultado_etapa := evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
 	if resultado_etapa == 0 { // no hay jugadores en pie
 		fmt.Println("Terminando juego del calamar sin ganadores.")
@@ -616,8 +659,7 @@ func main() {
 	// TO-DO: lo de pozo de wones
 
 	// Chequear si hay jugadores vivos para seguir jugando, y quienes
-	lista_vivos = jugadoresVivos(lista_jugadores, cant_jugadores, false)
-	//evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
+	lista_vivos = jugadoresVivos( cant_jugadores, false)
 	resultado_etapa = evaluarRestantes(lista_vivos, lista_jugadores) // Evalua si quedan jugadores suficientes para jugar
 	if resultado_etapa == 0 { // no hay jugadores en pie
 		fmt.Println("Terminando juego del calamar sin ganadores.")
@@ -654,21 +696,29 @@ func main() {
 
 
 	/*** Procesamiento etapa 3 ***/
-	
+	jugadores_a_notificar = jugadores_vivos
+	lista_vivos = jugadoresVivos(cant_jugadores, false)
+
 	// Ver si los restantes son impar
 	if len(lista_vivos)%2 == 1 {
 		fmt.Println("Sobrevivientes impares, se eliminará a uno")
 		lista_vivos = eliminarJugadorImpar(lista_jugadores, lista_vivos) // Se elimina uno al azar y retorna la nueva lista de vivos
 		jugadores_vivos -= 1
 	}
+	// esperar notificar a todos los jugadores vivos
+	flag_notificacion = true
+	container.reset("cont_res")		
+	for container.counters["cont_res"] < jugadores_a_notificar{
+	}
+	flag_notificacion = false
+
 
 	// Inicio de etapa 3
 	// Avisa a los jugadores que iniciara la etapa 3
 	fmt.Println("Inicio de Etapa 3")
 	etapa = etapa + 1
-	flag_notificacion = false
 
-	// Elige parejas y los informa a los jugadores
+	// Elige parejas
 	asigna_parejas := 1 // Las parejas van del 1 hasta el jugadores_vivos/2
 	for i := 0; i < jugadores_vivos; i++ {
 		ID_player1 := lista_vivos[i]
@@ -678,29 +728,25 @@ func main() {
 		lista_jugadores[ID_player1-1].nro_pareja_etapa3 = asigna_parejas
 		lista_jugadores[ID_player2-1].nro_pareja_etapa3 = asigna_parejas
 
-		// Avisar por mensaje a los jugadores su numero de pareja
 		asigna_parejas++
 	}
 
-	// Les pide que manden sus respuestas
-	for i := 0; i < jugadores_vivos; i++ {
-
-		// Recoger primera respuesta que llegue
-		// Guardar el ID de esa respuesta
-
-		// Hardcodeo
-		ID_rpta := 1
-		rpta := 4
-
-		lista_jugadores[ID_rpta-1].rpta_etapa3 = rpta
-
+	// esperar a que todos los vivos jueguen		
+	container.reset("cont_req")
+	for container.counters["cont_req"] < jugadores_vivos{
 	}
 
 	// Lider escoge un numero random entre 1 y 10
 	opt_lider = getRandomNum(1, 10)
+	fmt.Println("La opcion del Lider es:", opt_lider)
+
+	lista_vivos = jugadoresVivos( cant_jugadores, false)
+
+	jugadores_a_notificar = jugadores_vivos
+	por_eliminar = nil
 
 	// Procesa sus respuestas, compara resultados entre si y con el lider
-	for nro_pareja := 1; nro_pareja < jugadores_vivos/2; nro_pareja++ {
+	for nro_pareja := 1; nro_pareja <= jugadores_vivos/2; nro_pareja++ {
 		aux_break := 0
 		var vs_pareja []int32 // Para guardar los ID que componen cada pareja
 
@@ -724,14 +770,25 @@ func main() {
 
 		if rpta1 > rpta2 { // Pierde rpta1
 			// Avisar al jugador con ID vs_pareja[0] que perdio
-			esEliminado(*lista_jugadores[vs_pareja[0]-1])
+			//esEliminado(*lista_jugadores[vs_pareja[0]-1])
+			esEliminado(vs_pareja[0]-1)
 		} else if rpta1 < rpta2 { // Pierde rpta2
 			// Avisar al jugador con ID vs_pareja[1] que perdio
-			esEliminado(*lista_jugadores[vs_pareja[1]-1])
+			//esEliminado(*lista_jugadores[vs_pareja[1]-1])
+			esEliminado(vs_pareja[1]-1)
 		} // Si no entra a ninguno de los dos es que ambos ganaron, no se elimina a nadie
 	}
 
+	flag_notificacion = true
+	container.reset("cont_res")		
+	for container.counters["cont_res"] < jugadores_a_notificar{
+	}
+	flag_notificacion = false
+
 	// Entrega ganadores y la cantidad de wones
-	mostrarGanadores(lista_jugadores, cant_jugadores)
+	mostrarGanadores(cant_jugadores) // Deprecado
+
+	fmt.Println("Proceso lider finalizado.")
+	return
 
 }
