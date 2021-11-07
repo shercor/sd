@@ -7,7 +7,7 @@ message Solicitud {
     string PORT = 2;  // puerto jugador
 }
   
-message RespuestaSolicitud {
+message RespuestaSolicitud { // se usa varias veces por su campo ID
     int32 ID = 1; // ID
 }
 
@@ -37,7 +37,9 @@ service LiderService {
     rpc ProcesarJugadaDos(Jugada) returns (Message) {} // procesar jugada en Lider de etapa 2
     rpc ProcesarJugadaTres(Jugada) returns (Message) {} // procesar jugada en Lider de etapa 3
 
-    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {} // obtener resultado de ronda (o etapa para 2 y 3)
+    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {} // obtener resultado de ronda (etapa 1)
+
+    rpc NotificarEstado(RespuestaSolicitud) returns (Message) {} // notificar estado (OK, MUERTO)
 
     rpc EmpezarEtapa(Message) returns (Message) {} // para que esperen los jugadores a que empiece la suguiente etapa
 }

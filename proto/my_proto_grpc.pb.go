@@ -26,6 +26,8 @@ type LiderServiceClient interface {
 	ProcesarJugadaDos(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
 	ProcesarJugadaTres(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
 	GetResultadosRonda(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*ResultadoJugada, error)
+	//rpc AsignarEquipo(RespuestaSolicitud) returns (Message) {} // asignar equipo para parte 2
+	NotificarEstado(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*Message, error)
 	EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 }
 
@@ -91,6 +93,15 @@ func (c *liderServiceClient) GetResultadosRonda(ctx context.Context, in *Respues
 	return out, nil
 }
 
+func (c *liderServiceClient) NotificarEstado(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.LiderService/NotificarEstado", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *liderServiceClient) EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
 	out := new(Message)
 	err := c.cc.Invoke(ctx, "/t2.LiderService/EmpezarEtapa", in, out, opts...)
@@ -112,6 +123,8 @@ type LiderServiceServer interface {
 	ProcesarJugadaDos(context.Context, *Jugada) (*Message, error)
 	ProcesarJugadaTres(context.Context, *Jugada) (*Message, error)
 	GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error)
+	//rpc AsignarEquipo(RespuestaSolicitud) returns (Message) {} // asignar equipo para parte 2
+	NotificarEstado(context.Context, *RespuestaSolicitud) (*Message, error)
 	EmpezarEtapa(context.Context, *Message) (*Message, error)
 	mustEmbedUnimplementedLiderServiceServer()
 }
@@ -137,6 +150,9 @@ func (UnimplementedLiderServiceServer) ProcesarJugadaTres(context.Context, *Juga
 }
 func (UnimplementedLiderServiceServer) GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResultadosRonda not implemented")
+}
+func (UnimplementedLiderServiceServer) NotificarEstado(context.Context, *RespuestaSolicitud) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NotificarEstado not implemented")
 }
 func (UnimplementedLiderServiceServer) EmpezarEtapa(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmpezarEtapa not implemented")
@@ -262,6 +278,24 @@ func _LiderService_GetResultadosRonda_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiderService_NotificarEstado_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RespuestaSolicitud)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiderServiceServer).NotificarEstado(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.LiderService/NotificarEstado",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiderServiceServer).NotificarEstado(ctx, req.(*RespuestaSolicitud))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _LiderService_EmpezarEtapa_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Message)
 	if err := dec(in); err != nil {
@@ -310,6 +344,10 @@ var LiderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetResultadosRonda",
 			Handler:    _LiderService_GetResultadosRonda_Handler,
+		},
+		{
+			MethodName: "NotificarEstado",
+			Handler:    _LiderService_NotificarEstado_Handler,
 		},
 		{
 			MethodName: "EmpezarEtapa",

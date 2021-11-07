@@ -19,35 +19,33 @@ import (
 func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 
 	// elegir numero entre el 1 y 10 
-	eleccion := 0 
+	eleccion := "" 
 
 	if bot == false{
 		fmt.Println("Elija numero del 1 al 10:")
 
 		reader := bufio.NewReader(os.Stdin)
-		char, _, err := reader.ReadRune()
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		eleccion = int(char - '0')
+		eleccion, _ = reader.ReadString('\n')
+		eleccion = strings.TrimSuffix(eleccion, "\n")
 
 	}else{
 		min := 1
 		max := 10
-		eleccion = rand.Intn(max-min) + min
+		eleccion = strconv.Itoa(rand.Intn(max-min) + min)
 	}
 
-	fmt.Println(strconv.Itoa(eleccion))
+	fmt.Println(eleccion)
 
 	// procesar jugada
-	response, err := c.ProcesarJugada(context.Background(), &pb.Jugada{ID: my_ID, Numero: strconv.Itoa(eleccion)})
+	response, err := c.ProcesarJugada(context.Background(), &pb.Jugada{ID: my_ID, Numero: eleccion})
 	if err != nil {
 		log.Fatalf("Error when calling ProcesarJugada: %s", err)
 	}
 	log.Printf(response.Body)
 
-	contador_etapa_1 = contador_etapa_1 + eleccion
+	eleccion_int, err := strconv.Atoi(eleccion)
+
+	contador_etapa_1 = contador_etapa_1 + eleccion_int
 	fmt.Println("Sumas el valor de ", contador_etapa_1)
 
 	// esperar Resultados ronda (que todos los jugadores vivos respondan)
@@ -79,8 +77,61 @@ func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	return 1 // jugador pasa de ronda
 }
 
-func etapa_dos(bot bool) int {
-	return 0
+func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
+	// elegir numero entre el 1 y 10 
+	eleccion := 0 
+	if bot == false{
+		fmt.Println("Elija numero del 1 al 4:")
+
+		reader := bufio.NewReader(os.Stdin)
+		char, _, err := reader.ReadRune()
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		eleccion = int(char - '0')
+
+	}else{
+		min := 1
+		max := 4
+		eleccion = rand.Intn(max-min) + min
+	}
+
+	fmt.Println(strconv.Itoa(eleccion))
+
+	// procesar jugada
+	response, err := c.ProcesarJugadaDos(context.Background(), &pb.Jugada{ID: my_ID, Numero: strconv.Itoa(eleccion)})
+	if err != nil {
+		log.Fatalf("Error when calling ProcesarJugada: %s", err)
+	}
+	log.Printf(response.Body)
+
+	// esperar Resultados ronda (que todos los jugadores vivos respondan)
+	fmt.Println("Esperando jugada de todos los equipos...")
+
+	wait  := true
+	flag_vive := false
+
+	for wait == true{ 
+		response_ronda, err := c.NotificarEstado(context.Background(), &pb.RespuestaSolicitud{ID: my_id})
+		if err != nil {
+			log.Fatalf("Error when calling NotificarEstado: %s", err)
+		}
+		if (response_ronda.Body == "OK"){
+			wait = false
+			flag_vive = true
+		} else if (response_ronda.Body == "ELIMINADO") {
+			wait = false
+			flag_vive = false
+		}
+
+		time.Sleep(1*time.Second)
+	}
+
+	if flag_vive == true{ // pasa a la siguiente etapa
+		return 2
+	}
+	return 0 // sino jugador muere
 }
 
 
@@ -109,6 +160,36 @@ func esperar_etapa(c pb.LiderServiceClient) int {
 	}
 
 	if flag_ganador == true { // si gana el juego del calamar response_ronda.Body == "GANADOR"
+		return 1
+	}
+
+	// si no
+	return 0
+}
+
+// checkear si es asignado a un equipo en la etapa 2
+func esperar_equipo_dos(my_id int32, c pb.LiderServiceClient) int {
+	fmt.Println("Esperando asignación de equipos...")
+	wait  := true
+	flag_asignado := false
+
+	for wait == true{ 
+		response_ronda, err := c.NotificarEstado(context.Background(), &pb.RespuestaSolicitud{ID: my_id})
+		if err != nil {
+			log.Fatalf("Error when calling NotificarEstado: %s", err)
+		}
+		if (response_ronda.Body == "OK"){
+			wait = false
+			flag_asignado = true
+		} else if (response_ronda.Body == "ELIMINADO") {
+			wait = false
+			flag_asignado = false
+		}
+
+		time.Sleep(1*time.Second)
+	}
+
+	if flag_asignado == true { // jugador asignado
 		return 1
 	}
 
@@ -210,7 +291,7 @@ func main() {
 			for estado != 2 { // estado == 2 es que pasa a la siguiente etapa (o es ganador)
 				fmt.Println("Ronda: ", ronda+1)
 				estado = etapa_uno(bot, my_id, c)
-				if estado == 0 {
+				if estado == 0 { // muere
 					alive = false
 					break
 				}
@@ -218,8 +299,24 @@ func main() {
 			}		
 		case 2:
 			fmt.Println("Etapa 2")
+			estado = esperar_equipo_dos(my_id, c)
+			if estado == 1{ // equipo asignado
+				fmt.Println("Equipo asignado")
+
+				estado = etapa_dos(bot, my_id, c)  // estado == 2 es que pasa a la siguiente etapa
+				if estado == 0 { // muere 
+					alive = false
+					break
+				}
+
+			}else{ // muerte 
+				alive = false
+				break 
+			}
+
+			
 		case 3:
-			fmt.Println("Etapa 2")
+			fmt.Println("Etapa 3")
 		default: 
 			fmt.Println("Etapa no valida")
 		}
@@ -229,7 +326,7 @@ func main() {
 			break
 		}
 		if (estado == 2) {
-			fmt.Println("Pasas a la siguiente ronda")
+			fmt.Println("Pasas a la siguiente etapa")
 			ganador = esperar_etapa(c)
 			etapa = etapa + 1
 			fmt.Println("-------------------------")
