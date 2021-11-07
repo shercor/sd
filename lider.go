@@ -51,7 +51,7 @@ func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSol
 	// append jugador a lista de jugadores
 	var id int32
 	id = int32(jugadores_conectados) + 1
-	fmt.Println("ID ASIGNADA: ", id)
+	//fmt.Println("ID ASIGNADA: ", id)
 	jugadores_conectados = jugadores_conectados + 1
 
 	lista_jugadores = append(lista_jugadores, newJugador(id, in.IP, in.PORT)) // Jugador 1, 2, 3, ..., 16
@@ -194,7 +194,6 @@ func  (s *Server)  EmpezarEtapa(ctx context.Context, in *pb.Message) (*pb.Messag
 		return &pb.Message{Body: "NOK"}, nil
 	
 	} else if notificar_ganador == true { // notificar ganador(es)
-		// TO-DO: hacer logica para multiples ganadores
 		container.inc("cont_res")		
 		return &pb.Message{Body: "GANADOR"}, nil
 	}
@@ -210,7 +209,7 @@ func  (s *Server) NotificarEstado (ctx context.Context, in *pb.RespuestaSolicitu
 	}
 
 	for i := 0; i < len(por_eliminar); i++  {
-		fmt.Println(por_eliminar[i], in.ID)
+		//fmt.Println(por_eliminar[i], in.ID)
 		if por_eliminar[i] == in.ID {
 			container.inc("cont_res")
 			return &pb.Message{Body: "ELIMINADO"}, nil // eliminar jugador
@@ -282,7 +281,7 @@ func informarPozo() { // Agrega 100 millones a Pozo cuando un jugador muere
 func jugadoresVivos(cant_jugadores int, print bool) (lista_vivos []int32) { // Muestra por consola a los jugadores vivos al término de cada etapa
 	
 	for i := 0; i < cant_jugadores; i++ {
-		fmt.Println("-> ", lista_jugadores[i].ID, lista_jugadores[i].estado)
+		//fmt.Println("-> ", lista_jugadores[i].ID, lista_jugadores[i].estado)
 		if lista_jugadores[i].estado == "vivo" {
 			if print {
 				fmt.Println("El jugador:", lista_jugadores[i].ID, "está vivo")
@@ -330,7 +329,7 @@ func evaluarRestantes(lista_vivos []int32, lista_jugadores []*jugador) int { // 
 		fmt.Println("Todos los jugadores fueron eliminados")
 		return 0
 
-	} else if num_vivos == 1 { // TO-DO: hacer logica para multiples ganadores
+	} else if num_vivos == 1 { 
 		// Notificar ganador
 		fmt.Println("Solo queda un jugador en pie")
 		fmt.Println("El jugador ", lista_vivos[0], " gana el juego del Calamar")
@@ -347,8 +346,8 @@ func evaluarRestantes(lista_vivos []int32, lista_jugadores []*jugador) int { // 
 }
 
 func RemoveIndex(s []int32, index int32) []int32 { // Elimina la posicion index del slice, codigo de stackoverflow
-	fmt.Println(index)
-	fmt.Println(s)
+	//fmt.Println(index)
+	//fmt.Println(s)
 
 	if (len(s) == 0){ // slice vacio
 		return s
@@ -360,7 +359,7 @@ func RemoveIndex(s []int32, index int32) []int32 { // Elimina la posicion index 
 
 func eliminarJugadorImpar(lista_jugadores []*jugador, lista_vivos []int32) (new_lista_vivos []int32) {
 	index_eliminado := getRandomNum(0, len(lista_vivos)-1)
-	fmt.Println(index_eliminado)
+	//fmt.Println(index_eliminado)
 	//index_eliminado = 3
 	ID_eliminado := lista_vivos[index_eliminado]
 	//esEliminado(*lista_jugadores[ID_eliminado-1])
@@ -384,10 +383,10 @@ func asignarGrupos(lista_jugadores []*jugador, lista_vivos []int32) {
 }
 
 func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int32, letra string) (new_lista_vivos []int32) {
-	fmt.Println("Antes: ", lista_vivos)
+	//fmt.Println("Antes: ", lista_vivos)
 	for i := 0; i < len(lista_vivos); i++ {
 		currentID := lista_vivos[i]
-		fmt.Println(lista_jugadores[currentID-1].equipo_etapa2, letra)
+		//fmt.Println(lista_jugadores[currentID-1].equipo_etapa2, letra)
 		if lista_jugadores[currentID-1].equipo_etapa2 == letra {
 			fmt.Println("Procesando eliminacion")
 			// Si el jugador es del grupo 'letra', se elimina
@@ -398,7 +397,7 @@ func eliminarGrupo(lista_jugadores []*jugador, lista_vivos []int32, letra string
 	}
 
 	new_lista_vivos = jugadoresVivos(cant_jugadores, false)
-	fmt.Println("Despues: ", new_lista_vivos)
+	//fmt.Println("Despues: ", new_lista_vivos)
 
 	return new_lista_vivos // Retorna la lista de los vivos cuando ya se eliminó el grupo 'letra'
 }
@@ -516,8 +515,8 @@ func main() {
 	for contador_rondas < max_rondas {
 		
 		// Lider escoge un numero al azar entre el 6 y 10
-		//opt_lider = getRandomNum(6, 10)
-		opt_lider = 22
+		opt_lider = getRandomNum(6, 10)
+		//opt_lider = 22
 		
 		// vaciar slices antes de empezar ronda
 		muertos_por_ronda = nil  // Una lista de muertos ([1,4,5,8,16] por ejemplo)
@@ -553,8 +552,8 @@ func main() {
 	}else if resultado_etapa == 2{ // un solo jugador en pie, el ganador 
 		fmt.Println("Notificando ganador...")
 		notificar_ganador = true
+		flag_next_etapa = true
 		// esperar a que se notifique al ganador
-		// TO-DO: hacer logica para multiples ganadores (aunque no es necesario en esta etapa)
 		container.reset("cont_res")		
 		for container.counters["cont_res"] < 1 {
 		}
@@ -654,7 +653,6 @@ func main() {
 	}
 	flag_notificacion = false
 
-
 	// A estas alturas se elimino un grupo, y si ambos obtienen la misma paridad no se elimino nada ni se restaron los jugadores_vivos
 	// TO-DO: lo de pozo de wones
 
@@ -669,7 +667,6 @@ func main() {
 		fmt.Println("Notificando ganador...")
 		notificar_ganador = true
 		// esperar a que se notifique al ganador
-		// TO-DO: hacer logica para multiples ganadores (aunque no es necesario en esta etapa)
 		container.reset("cont_res")		
 		for container.counters["cont_res"] < 1 {
 		}
@@ -785,8 +782,18 @@ func main() {
 	}
 	flag_notificacion = false
 
+	fmt.Println("Notificando ganador...")
+	lista_vivos = jugadoresVivos( cant_jugadores, false)
+	// notificar ganadores
+	flag_next_etapa = true
+	notificar_ganador = true
+	container.reset("cont_res")		
+	for container.counters["cont_res"] < len(lista_vivos){
+	}
+	flag_notificacion = false
+	
 	// Entrega ganadores y la cantidad de wones
-	mostrarGanadores(cant_jugadores) // Deprecado
+	mostrarGanadores(cant_jugadores) 
 
 	fmt.Println("Proceso lider finalizado.")
 	return
