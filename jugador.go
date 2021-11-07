@@ -16,11 +16,12 @@ import (
 
 // TO-DO: func ver pozo
 
+
+// rutina etapa 1
 func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 
 	// elegir numero entre el 1 y 10 
 	eleccion := "" 
-
 	if bot == false{
 		fmt.Println("Elija numero del 1 al 10:")
 
@@ -31,6 +32,7 @@ func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	}else{
 		min := 1
 		max := 10
+		rand.Seed(time.Now().UnixNano())
 		eleccion = strconv.Itoa(rand.Intn(max-min) + min)
 	}
 
@@ -77,6 +79,7 @@ func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	return 1 // jugador pasa de ronda
 }
 
+// rutina etapa 2
 func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	// elegir numero entre el 1 y 10 
 	eleccion := 0 
@@ -94,6 +97,7 @@ func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	}else{
 		min := 1
 		max := 4
+		rand.Seed(time.Now().UnixNano())
 		eleccion = rand.Intn(max-min) + min
 	}
 
@@ -102,7 +106,7 @@ func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	// procesar jugada
 	response, err := c.ProcesarJugadaDos(context.Background(), &pb.Jugada{ID: my_ID, Numero: strconv.Itoa(eleccion)})
 	if err != nil {
-		log.Fatalf("Error when calling ProcesarJugada: %s", err)
+		log.Fatalf("Error when calling ProcesarJugadaDos: %s", err)
 	}
 	log.Printf(response.Body)
 
@@ -134,9 +138,59 @@ func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	return 0 // sino jugador muere
 }
 
+// rutina etapa 3
+func etapa_tres(bot bool, my_ID int32, c pb.LiderServiceClient) int {
+	// elegir numero entre el 1 y 10 
+	eleccion := "" 
+	if bot == false{
+		fmt.Println("Elija numero del 1 al 10:")
 
-func etapa_tres(bot bool) int {
-	return 0
+		reader := bufio.NewReader(os.Stdin)
+		eleccion, _ = reader.ReadString('\n')
+		eleccion = strings.TrimSuffix(eleccion, "\n")
+
+	}else{
+		min := 1
+		max := 10
+		rand.Seed(time.Now().UnixNano())
+		eleccion = strconv.Itoa(rand.Intn(max-min) + min)
+	}
+
+	fmt.Println(eleccion)
+
+	// procesar jugada
+	response, err := c.ProcesarJugadaTres(context.Background(), &pb.Jugada{ID: my_ID, Numero: eleccion})
+	if err != nil {
+		log.Fatalf("Error when calling ProcesarJugadaTres: %s", err)
+	}
+	log.Printf(response.Body)
+
+	// esperar Resultados ronda (que todos los jugadores vivos respondan)
+	fmt.Println("Esperando jugada de todos los equipos...")
+
+	wait  := true
+	flag_vive := false
+
+	for wait == true{ 
+		response_ronda, err := c.NotificarEstado(context.Background(), &pb.RespuestaSolicitud{ID: my_id})
+		if err != nil {
+			log.Fatalf("Error when calling NotificarEstado: %s", err)
+		}
+		if (response_ronda.Body == "OK"){
+			wait = false
+			flag_vive = true
+		} else if (response_ronda.Body == "ELIMINADO") {
+			wait = false
+			flag_vive = false
+		}
+
+		time.Sleep(1*time.Second)
+	}
+
+	if flag_vive == true{ // pasa a la siguiente etapa
+		return 2
+	}
+	return 0 // sino jugador muere
 }
 
 // rutina para esperar a que empiece la proxima etapa
@@ -146,6 +200,7 @@ func esperar_etapa(c pb.LiderServiceClient) int {
 	flag_ganador := false
 
 	for wait_jugadores == true{ 
+		//fmt.Println("wait")
 		response_ronda, err := c.EmpezarEtapa(context.Background(), &pb.Message{Body: "wait"})
 		if err != nil {
 			log.Fatalf("Error when calling EmpezarEtapa: %s", err)
@@ -197,6 +252,35 @@ func esperar_equipo_dos(my_id int32, c pb.LiderServiceClient) int {
 	return 0
 }
 
+func esperar_pareja_tres(my_id int32, c pb.LiderServiceClient) int {
+	fmt.Println("Esperando asignación de parejas...")
+	wait  := true
+	flag_asignado := false
+
+	for wait == true{ 
+		response_ronda, err := c.NotificarEstado(context.Background(), &pb.RespuestaSolicitud{ID: my_id})
+		if err != nil {
+			log.Fatalf("Error when calling NotificarEstado: %s", err)
+		}
+		if (response_ronda.Body == "OK"){
+			wait = false
+			flag_asignado = true
+		} else if (response_ronda.Body == "ELIMINADO") {
+			wait = false
+			flag_asignado = false
+		}
+
+		time.Sleep(1*time.Second)
+	}
+
+	if flag_asignado == true { // jugador asignado
+		return 1
+	}
+
+	// si no
+	return 0
+}
+
 var my_id int32 // ID jugador
 var contador_etapa_1 int // contador para interfaz en etapa 1
 
@@ -221,7 +305,11 @@ func main() {
 	fmt.Println("Elija opción:")
 	fmt.Println("1. Unirse al juego del calamar\n2. Terminar todo")
 
-	for continue_flag {	
+	if bot == true {
+		alive = true
+	}
+
+	for bot == false && continue_flag {	
 		reader := bufio.NewReader(os.Stdin)
 		char, _, err := reader.ReadRune()
 	
@@ -239,9 +327,6 @@ func main() {
 				fmt.Println("Respuesta no valida")
 		}
 	}
-
-	// obtener puerto disponible para el jugador
-	// rango para el puerto aleatorio de la partida
 
 	// conectar con lider
 
@@ -278,6 +363,8 @@ func main() {
 	log.Printf("ID asignado por Lider: %d", response.ID)
 	
 	/*******************************************************************/
+	// esperar a que empiece 
+	_ = esperar_etapa(c)
 
 	var etapa = 1
 	contador_etapa_1 = 0
@@ -317,6 +404,21 @@ func main() {
 			
 		case 3:
 			fmt.Println("Etapa 3")
+			estado = esperar_pareja_tres(my_id, c)
+			if estado == 1{ // equipo asignado
+				fmt.Println("Pareja asignada")
+
+				estado = etapa_tres(bot, my_id, c)  // estado == 2 es que pasa a la siguiente etapa (ganar en este caso)
+				if estado == 0 { // muere 
+					//ganador = 1
+					alive = false
+					break
+				}
+
+			}else{ // muerte 
+				alive = false
+				break 
+			}
 		default: 
 			fmt.Println("Etapa no valida")
 		}
