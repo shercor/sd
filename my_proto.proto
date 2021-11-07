@@ -33,8 +33,11 @@ service LiderService {
     rpc SayHello(Message) returns (Message) {} // para debug
     
     // etapas
-    rpc ProcesarJugada(Jugada) returns (Message) {} // procesar jugada en Lider
-    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {} // obtener resultado de ronda 
+    rpc ProcesarJugada(Jugada) returns (Message) {} // procesar jugada en Lider de etapa 1
+    rpc ProcesarJugadaDos(Jugada) returns (Message) {} // procesar jugada en Lider de etapa 2
+    rpc ProcesarJugadaTres(Jugada) returns (Message) {} // procesar jugada en Lider de etapa 3
+
+    rpc GetResultadosRonda(RespuestaSolicitud) returns (ResultadoJugada) {} // obtener resultado de ronda (o etapa para 2 y 3)
 
     rpc EmpezarEtapa(Message) returns (Message) {} // para que esperen los jugadores a que empiece la suguiente etapa
 }
