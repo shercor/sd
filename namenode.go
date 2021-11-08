@@ -30,12 +30,18 @@ func main() {
 	// HARDCODEO, obtener esto con mensajes
 	ID_actual := 1
 	etapa := 1
+	ronda := 1
 	opt := getRandomNum(0, 2) // Elegir un indice del slice al azar
 
 	// Mandar mensaje a ip_datanodes[opt]
 	// El mensaje contiene el ID_jugador, la etapa y la jugada
 
 	// Escribir en un txt
+	if etapa == 1 { // Si es la etapa 1 se crea con la ronda ademas
+		write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " Ronda_" + strconv.Itoa(ronda) + ip_datanodes[opt]
+	} else {
+		write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " " + ip_datanodes[opt]
+	}
 	write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " " + ip_datanodes[opt]
 	f.WriteString(write_str + "\n")
 
