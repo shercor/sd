@@ -1,11 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	pb "github.com/shercor/sd/proto"
+	"net"
+	"google.golang.org/grpc"
+	"golang.org/x/net/context"
 )
 
 func leerRegistro(ID int32) {
@@ -45,14 +50,14 @@ func filtrarTxt(ID int32) (lista_txt []string) { // Filtra y retorna los nombres
 	return lista_txt
 }
 
-func escribirRegistro(ID_actual, etapa, jugada, ronda int32) {
+func escribirRegistro(ID_actual int32, etapa string, jugada string, ronda string) {
 
 	nametxt := ""
 
-	if etapa == 1 { // Si es la etapa 1, se creara un archivo para cada ronda, jugador_5__etapa_1__ronda_2.txt por ejemplo
-		nametxt = "Jugador_" + strconv.FormatInt(int64(ID_actual), 10) + "__Etapa_" + strconv.FormatInt(int64(etapa), 10) + "__Ronda_" + strconv.FormatInt(int64(ronda), 10) + ".txt"
+	if etapa == "1" { // Si es la etapa 1, se creara un archivo para cada ronda, jugador_5__etapa_1__ronda_2.txt por ejemplo
+		nametxt = "Jugador_" + strconv.FormatInt(int64(ID_actual), 10) + "__Etapa_" + etapa + "__Ronda_" + ronda + ".txt"
 	} else {
-		nametxt = "Jugador_" + strconv.FormatInt(int64(ID_actual), 10) + "__Etapa_" + strconv.FormatInt(int64(etapa), 10) + ".txt"
+		nametxt = "Jugador_" + strconv.FormatInt(int64(ID_actual), 10) + "__Etapa_" + etapa + ".txt"
 	}
 
 	f, err := os.Create(nametxt)
@@ -64,11 +69,43 @@ func escribirRegistro(ID_actual, etapa, jugada, ronda int32) {
 	defer f.Close() // Cierra el archivo cuando termina la ejecucion
 
 	// Escribir en un txt
-	write_str := strconv.FormatInt(int64(jugada), 10)
+	write_str :=  jugada
 	f.WriteString(write_str + "\n")
 
 }
 
+/********************************** gRPC **********************************************/
+
+type Server struct {
+	pb.UnimplementedDataNodeServiceServer
+}
+
+func startServer(){
+	/*  Iniciar servidor DataNode */
+	fmt.Println("Iniciando servidor DataNode...")
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9300))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}else{
+		log.Printf("... listen exitoso")
+	}
+
+	s := Server{}
+	grpcServer := grpc.NewServer()
+	pb.RegisterDataNodeServiceServer(grpcServer, &s)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %s", err)
+	}
+}
+
+// funcion response para registrar jugada
+func (s *Server) RegistrarJugada(ctx context.Context, in *pb.InfoJugada) (*pb.Message, error) {	
+	escribirRegistro(in.ID, in.Etapa, in.Jugada, in.Ronda)
+	return &pb.Message{Body: "OK"}, nil
+}
+
+/*
 func main() {
 
 	// Recibe las jugadas de cada jugador, mandadas desde el NameNode
@@ -91,4 +128,13 @@ func main() {
 		leerRegistro(ID)
 	}
 
+}
+*/
+
+func main() {
+
+	go startServer() // gRPC
+	
+	for {	
+	}
 }

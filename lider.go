@@ -35,6 +35,32 @@ func (c *Container) reset(name string) {
 
 /********************************** gRPC **********************************************/
 
+// rutina para registrar jugada en NameNode
+func registrarJugada(ID int32, etapa string, rpta int, is_ronda bool){
+	ronda := "0"
+	if is_ronda == true {
+		 ronda =strconv.Itoa(contador_rondas + 1)
+	}
+	jugada := strconv.Itoa(rpta)
+
+	// conectar con NameNode	
+	var conn *grpc.ClientConn
+	conn, err := grpc.Dial(":9400", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %s", err)
+	}
+	defer conn.Close()
+
+	c_lider := pb.NewNameNodeServiceClient(conn)
+	
+	response, err := c_lider.RegistrarJugada(context.Background(), &pb.InfoJugada{ID: ID, Etapa: etapa, Jugada: jugada, Ronda: ronda})
+	if err != nil {
+		log.Fatalf("Error when calling RegistrarJugada: %s", err)
+	}
+	fmt.Println(response.Body)
+
+}
+
 type Server struct {
 	pb.UnimplementedLiderServiceServer
 }
@@ -120,6 +146,7 @@ func (s *Server) ProcesarJugada(ctx context.Context, in *pb.Jugada) (*pb.Message
 
 	container.inc("cont_req")
 	// Registrar su jugada en NameNode
+	registrarJugada(ID_rpta, "1", rpta, true)
 	
 	return &pb.Message{Body: "OK"}, nil 
 }
@@ -147,6 +174,7 @@ func (s *Server) ProcesarJugadaDos(ctx context.Context, in *pb.Jugada) (*pb.Mess
 	
 	container.inc("cont_req")
 	// Registrar su jugada en NameNode
+	registrarJugada(ID_rpta, "2", rpta, false)
 
 	return &pb.Message{Body: "OK"}, nil 
 }
@@ -165,6 +193,7 @@ func (s *Server) ProcesarJugadaTres(ctx context.Context, in *pb.Jugada) (*pb.Mes
 
 	container.inc("cont_req")
 	// Registrar su jugada en NameNode
+	registrarJugada(ID_rpta, "3", rpta, false)
 
 	return &pb.Message{Body: "OK"}, nil 
 }

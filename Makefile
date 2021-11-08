@@ -13,8 +13,15 @@ jugadores_full:
 lider: 
 	go run lider.go 5
 
-
 lider_full: 
 	go run lider.go 16
 
+pozo:
+	go run pozo.go
+
+datanode:
+	go run datanode.go
+
+namenode:
+	go run namenode.go
 		

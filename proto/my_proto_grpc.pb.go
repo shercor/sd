@@ -477,3 +477,175 @@ var PozoService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "my_proto.proto",
 }
+
+// NameNodeServiceClient is the client API for NameNodeService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type NameNodeServiceClient interface {
+	RegistrarJugada(ctx context.Context, in *InfoJugada, opts ...grpc.CallOption) (*Message, error)
+}
+
+type nameNodeServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewNameNodeServiceClient(cc grpc.ClientConnInterface) NameNodeServiceClient {
+	return &nameNodeServiceClient{cc}
+}
+
+func (c *nameNodeServiceClient) RegistrarJugada(ctx context.Context, in *InfoJugada, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.NameNodeService/RegistrarJugada", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// NameNodeServiceServer is the server API for NameNodeService service.
+// All implementations must embed UnimplementedNameNodeServiceServer
+// for forward compatibility
+type NameNodeServiceServer interface {
+	RegistrarJugada(context.Context, *InfoJugada) (*Message, error)
+	mustEmbedUnimplementedNameNodeServiceServer()
+}
+
+// UnimplementedNameNodeServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedNameNodeServiceServer struct {
+}
+
+func (UnimplementedNameNodeServiceServer) RegistrarJugada(context.Context, *InfoJugada) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegistrarJugada not implemented")
+}
+func (UnimplementedNameNodeServiceServer) mustEmbedUnimplementedNameNodeServiceServer() {}
+
+// UnsafeNameNodeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to NameNodeServiceServer will
+// result in compilation errors.
+type UnsafeNameNodeServiceServer interface {
+	mustEmbedUnimplementedNameNodeServiceServer()
+}
+
+func RegisterNameNodeServiceServer(s grpc.ServiceRegistrar, srv NameNodeServiceServer) {
+	s.RegisterService(&NameNodeService_ServiceDesc, srv)
+}
+
+func _NameNodeService_RegistrarJugada_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InfoJugada)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NameNodeServiceServer).RegistrarJugada(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.NameNodeService/RegistrarJugada",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NameNodeServiceServer).RegistrarJugada(ctx, req.(*InfoJugada))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// NameNodeService_ServiceDesc is the grpc.ServiceDesc for NameNodeService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var NameNodeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "t2.NameNodeService",
+	HandlerType: (*NameNodeServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegistrarJugada",
+			Handler:    _NameNodeService_RegistrarJugada_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "my_proto.proto",
+}
+
+// DataNodeServiceClient is the client API for DataNodeService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type DataNodeServiceClient interface {
+	RegistrarJugada(ctx context.Context, in *InfoJugada, opts ...grpc.CallOption) (*Message, error)
+}
+
+type dataNodeServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewDataNodeServiceClient(cc grpc.ClientConnInterface) DataNodeServiceClient {
+	return &dataNodeServiceClient{cc}
+}
+
+func (c *dataNodeServiceClient) RegistrarJugada(ctx context.Context, in *InfoJugada, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.DataNodeService/RegistrarJugada", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// DataNodeServiceServer is the server API for DataNodeService service.
+// All implementations must embed UnimplementedDataNodeServiceServer
+// for forward compatibility
+type DataNodeServiceServer interface {
+	RegistrarJugada(context.Context, *InfoJugada) (*Message, error)
+	mustEmbedUnimplementedDataNodeServiceServer()
+}
+
+// UnimplementedDataNodeServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedDataNodeServiceServer struct {
+}
+
+func (UnimplementedDataNodeServiceServer) RegistrarJugada(context.Context, *InfoJugada) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegistrarJugada not implemented")
+}
+func (UnimplementedDataNodeServiceServer) mustEmbedUnimplementedDataNodeServiceServer() {}
+
+// UnsafeDataNodeServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DataNodeServiceServer will
+// result in compilation errors.
+type UnsafeDataNodeServiceServer interface {
+	mustEmbedUnimplementedDataNodeServiceServer()
+}
+
+func RegisterDataNodeServiceServer(s grpc.ServiceRegistrar, srv DataNodeServiceServer) {
+	s.RegisterService(&DataNodeService_ServiceDesc, srv)
+}
+
+func _DataNodeService_RegistrarJugada_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InfoJugada)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DataNodeServiceServer).RegistrarJugada(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.DataNodeService/RegistrarJugada",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DataNodeServiceServer).RegistrarJugada(ctx, req.(*InfoJugada))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// DataNodeService_ServiceDesc is the grpc.ServiceDesc for DataNodeService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var DataNodeService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "t2.DataNodeService",
+	HandlerType: (*DataNodeServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegistrarJugada",
+			Handler:    _DataNodeService_RegistrarJugada_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "my_proto.proto",
+}

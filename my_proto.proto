@@ -26,6 +26,13 @@ message ResultadoJugada {
     bool WAIT = 3; // flag esperar a otros jugadores
 }
 
+message InfoJugada{
+    int32 ID = 1;
+	string etapa = 2;
+	string jugada = 3;
+	string ronda = 4; // RONDA SOLO SE MANDA EN ETAPA 1 o de lo contrario mandar siempre con valor 0 
+}
+
 // Interface exported by the server (Lider)
 service LiderService {
     // Simple rpc
@@ -51,5 +58,13 @@ service PozoService {
     rpc ConsultarMontoAcumulado(Message) returns (Message) {} // lider -> pozo
 }
 
+// Interface exported by the server (NameNode)
+service NameNodeService {
+    rpc RegistrarJugada(InfoJugada) returns (Message) {}
+}
 
+// Interface exported by the server (DataNode)
+service DataNodeService {
+    rpc RegistrarJugada(InfoJugada) returns (Message) {}
+}
 
