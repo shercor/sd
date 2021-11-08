@@ -72,7 +72,10 @@ func main() {
 	defer f.Close() // Cierra el archivo cuando termina la ejecucion
 
 	// RabbitMQ
-	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/") 
+	//conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/") 
+	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672//pozo") 
+	
+
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
 	ch, err := conn.Channel()
