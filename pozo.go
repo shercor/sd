@@ -19,42 +19,6 @@ func failOnError(err error, msg string) { // Para errores
 	}
 }
 
-// en el lider debe ser
-/* ----- ESTE TROZO DE CODIGO DEBE IR EN EL JUGADOR, EN LA PARTE DONDE PREGUNTA AL POZO CUANTO DINERO HAY -------
-
-// SETUP RABBITMQ
-conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
-failOnError(err, "Failed to connect to RabbitMQ")
-defer conn.Close()
-
-ch, err := conn.Channel()
-failOnError(err, "Failed to open a channel")
-defer ch.Close()
-
-q, err := ch.QueueDeclare(
-	"pozo", // name
-	false,   // durable
-	false,   // delete when unused
-	false,   // exclusive
-	false,   // no-wait
-	nil,     // arguments
-)
-failOnError(err, "Failed to declare a queue")
-
-body := "Hello World!" // MENSAJE A ENVIAR ---------------
-err = ch.Publish( 	   // ENVIA EL MENSAJE A LA COLA
-	"",     // exchange
-	q.Name, // routing key
-	false,  // mandatory
-	false,  // immediate
-	amqp.Publishing{
-		ContentType: "text/plain",
-		Body:        []byte(body),
-	})
-failOnError(err, "Failed to publish a message")
-log.Printf(" [x] Sent %s", body)
-*/
-
 /********************************** gRPC **********************************************/
 
 type Server struct {
@@ -144,10 +108,13 @@ func main() {
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body) // recibe mensaje
-
+			
+			ID_actual := strings.Split(d.Body, "_")[0]
+			etapa := strings.Split(d.Body, "_")[1]
+			
 			// Por cada mensaje, aumenta los wones y escribe en el txt el jugador que murio
 			pozo += wones
-			write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " " + strconv.Itoa(pozo)
+			write_str := "Jugador_" + ID_actual + " Etapa_" + etapa + " " + strconv.Itoa(pozo)
 			f.WriteString(write_str + "\n")
 		}
 	}()
@@ -155,75 +122,5 @@ func main() {
 
 	for {	
 	}
-
-	// SETUP ACTIVEMQ
-	
-	/*
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") // Al parecer ese puerto default funciona
-	failOnError(err, "Failed to connect to RabbitMQ")
-	defer conn.Close()
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
-	defer ch.Close()
-
-	// Declara una queue
-	q, err := ch.QueueDeclare(
-		"wones", // name
-		false,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
-	)
-	failOnError(err, "Failed to declare a queue")
-
-	fmt.Println(q)
-
-	for i := 0; i < cant_jugadores; i++ {
-		// Espera 16 mensajes, o en realidad deberian ser 15?
-		// o libre? (puede haber mas de un ganador)
-		// AAAAA modificar en caso de
-
-		// HARDCODEO, obtener esto con mensajes
-		ID_actual := 1
-		etapa := 1
-
-		// Propuesta charcha de "paralelismo" (agregar lo de sincrono/asincrono con rabbitMQ)
-		if ID_actual == 0 { // Mandar ID 0 quiere decir "estoy consultando cuantos wones hay"
-			// Mandar msj SÍNCRONO con los wones actuales
-			fmt.Println("El pozo actual acumulado es de:", pozo) // <-- mandar esto al jugador
-
-		} else {
-			// Funcionamiento normal de agregar al pozo
-
-			// Asíncrono - RabbitMQ
-			msgs, err := ch.Consume( // Consumo mensajes
-				q.Name, // queue
-				"",     // consumer
-				true,   // auto-ack
-				false,  // exclusive
-				false,  // no-local
-				false,  // no-wait
-				nil,    // args
-			)
-			failOnError(err, "Failed to register a consumer")
-
-			forever := make(chan bool) // Crear un canal para recibir mensajes en loop infinito
-
-			go func() {
-				for d := range msgs {
-					log.Printf("Received a message: %s", d.Body) // recibe mensaje
-
-					// Por cada mensaje, aumenta los wones y escribe en el txt el jugador que murio
-					pozo += wones
-					write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " " + strconv.Itoa(pozo)
-					f.WriteString(write_str + "\n")
-				}
-			}()
-			<-forever
-		}
-
-	}
-	*/
 
 }
