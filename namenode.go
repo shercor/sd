@@ -120,10 +120,17 @@ func startServer(){
 var ip_datanodes []string
 func main() {
 	
-	//ip_datanodes = {"10.0.1.11", "10.0.1.12", "10.0.1.13"} 
+	
+	/*
 	ip_datanodes = append(ip_datanodes, "") // local 
 	ip_datanodes = append(ip_datanodes, "")
 	ip_datanodes = append(ip_datanodes, "")
+	*/
+	ip_datanodes = append(ip_datanodes, "10.6.43.102") // VM 
+	ip_datanodes = append(ip_datanodes, "10.6.43.103")
+	ip_datanodes = append(ip_datanodes, "10.6.43.104")
+
+
 
 	go startServer() // gRPC
 	
