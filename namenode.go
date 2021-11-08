@@ -126,9 +126,9 @@ func main() {
 	ip_datanodes = append(ip_datanodes, "")
 	ip_datanodes = append(ip_datanodes, "")
 	*/
-	ip_datanodes = append(ip_datanodes, "10.6.43.102") // VM 
+	ip_datanodes = append(ip_datanodes, "10.6.43.101") // VM 
+	ip_datanodes = append(ip_datanodes, "10.6.43.102")
 	ip_datanodes = append(ip_datanodes, "10.6.43.103")
-	ip_datanodes = append(ip_datanodes, "10.6.43.104")
 
 
 
