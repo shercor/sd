@@ -4,6 +4,8 @@
 - Christian Trujillo (Par. 201) 201673582-8
 - Sebastián Herrera (Par. 200) 201551551-4
 
+Versión GO: go1.17.3 linux/amd64 (ya esta actualizado en VM's)
+
 Para ejecutar los procesos con 16 bots, en cada maquina: 
 - Navegar a carpeta /sd
 - Ejecutar comando make dependiendo del tipo de proceso

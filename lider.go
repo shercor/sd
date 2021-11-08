@@ -222,10 +222,8 @@ func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolic
 		if (playerID == id_jugador){
 			//fmt.Println("El jugador", id_jugador, "es eliminado")
 			lista_jugadores[id_jugador-1].estado = "muerto"
-
-
 			vivo_bool = false
-			// Mandar msj al pozo para aumentarlo
+			aumentarPozo(lista_jugadores[index].ID, etapa_actual)
 		}
 
 		
@@ -332,13 +330,9 @@ func mostrarGanadores(cant_jugadores int) { // Muestra por consola a los ganador
 
 
 func esEliminado(index int32) { // Cuando la logica detecta que el jugador muere, avisa al jugador
-	/*
-	jugador_eliminado.estado = "muerto"
-	por_eliminar = append(por_eliminar, jugador_eliminado.ID)
-	mostrarMuerte(jugador_eliminado.ID) // Printea por consola quien murio
-	*/
 	lista_jugadores[index].estado = "muerto"
 	por_eliminar = append(por_eliminar, lista_jugadores[index].ID)
+	aumentarPozo(lista_jugadores[index].ID, etapa_actual)
 	mostrarMuerte(lista_jugadores[index].ID) // Printea por consola quien murio
 }
 
@@ -492,6 +486,46 @@ func consultarNameNode(){
 	}
 }
 
+/******* RABBITMQ *************************/
+func aumentarPozo(ID int32, etapa string){ 
+	fmt.Println("Aumentando pozo (asíncronamente)")
+	// SETUP RABBITMQ
+	//conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial("amqp://guest:guest@10.6.43.102:5672/")
+	
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	q, err := ch.QueueDeclare(
+		"pozo", // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	//body := "Hello World!" // MENSAJE A ENVIAR ---------------
+	body := strconv.Itoa(int(in.ID)) + "_" + etapa
+
+	err = ch.Publish( 	   // ENVIA EL MENSAJE A LA COLA
+		"",     // exchange
+		q.Name, // routing key
+		false,  // mandatory
+		false,  // immediate
+		amqp.Publishing{
+			ContentType: "text/plain",
+			Body:        []byte(body),
+		})
+	failOnError(err, "Failed to publish a message")
+	log.Printf(" [x] Sent %s", body)
+}
+
 /******* variables globales ***************/
 var cant_jugadores int
 var lista_jugadores []*jugador // Slice de structs con los jugadores
@@ -519,6 +553,8 @@ var contador_rondas int // contador de ronda para etapa 1
 
 var grupoA_suma int // sumas para etapa 2
 var grupoB_suma  int 
+
+var etapa_actual int
 
 /************** Funcion main ***************/
 func main() {
@@ -576,6 +612,7 @@ func main() {
 
 	/******************** LOOP ETAPA 1 ********************************/
 	fmt.Println("Inicio de Etapa 1")
+	etapa_actual = "1"
 	for contador_rondas < max_rondas {
 		
 		// Lider escoge un numero al azar entre el 6 y 10
@@ -649,6 +686,7 @@ func main() {
 	}
 	flag_next_etapa = false
 
+	etapa_actual = "2"
 	/*** Procesamiento etapa 2 ***/
 	jugadores_a_notificar := jugadores_vivos
 	por_eliminar = nil
@@ -763,7 +801,7 @@ func main() {
 	}
 	flag_next_etapa = false
 
-
+	etapa_actual = "3"
 	/*** Procesamiento etapa 3 ***/
 	jugadores_a_notificar = jugadores_vivos
 	lista_vivos = jugadoresVivos(cant_jugadores, false)

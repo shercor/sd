@@ -106,13 +106,59 @@ func main() {
 
 	defer f.Close() // Cierra el archivo cuando termina la ejecucion
 
-	for {
-		
+	// RabbitMQ
+	conn, err := amqp.Dial("amqp://guest:guest@10.6.43.102:5672/") 
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer conn.Close()
+	ch, err := conn.Channel()
+	failOnError(err, "Failed to open a channel")
+	defer ch.Close()
+
+	// Declara una queue
+	q, err := ch.QueueDeclare(
+		"wones", // name
+		false,   // durable
+		false,   // delete when unused
+		false,   // exclusive
+		false,   // no-wait
+		nil,     // arguments
+	)
+	failOnError(err, "Failed to declare a queue")
+
+	fmt.Println(q)
+
+	// Asíncrono - RabbitMQ
+	msgs, err := ch.Consume( // Consumo mensajes
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	failOnError(err, "Failed to register a consumer")
+
+	forever := make(chan bool) // Crear un canal para recibir mensajes en loop infinito
+
+	go func() {
+		for d := range msgs {
+			log.Printf("Received a message: %s", d.Body) // recibe mensaje
+
+			// Por cada mensaje, aumenta los wones y escribe en el txt el jugador que murio
+			pozo += wones
+			write_str := "Jugador_" + strconv.Itoa(ID_actual) + " Etapa_" + strconv.Itoa(etapa) + " " + strconv.Itoa(pozo)
+			f.WriteString(write_str + "\n")
+		}
+	}()
+	<-forever
+
+	for {	
 	}
+
 	// SETUP ACTIVEMQ
 	
 	/*
-
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") // Al parecer ese puerto default funciona
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
