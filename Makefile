@@ -24,4 +24,6 @@ datanode:
 
 namenode:
 	go run namenode.go
-		
+
+clean:
+	rm *.txt
