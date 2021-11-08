@@ -5,8 +5,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	pb "github.com/shercor/sd/proto"
+	"net"
+	"google.golang.org/grpc"
+	"golang.org/x/net/context"
 
-	amqp "github.com/streadway/amqp"
+	//amqp "github.com/streadway/amqp"
 )
 
 func failOnError(err error, msg string) { // Para errores
@@ -54,7 +58,7 @@ log.Printf(" [x] Sent %s", body)
 /********************************** gRPC **********************************************/
 
 type Server struct {
-	pb.UnimplementedLiderServiceServer
+	pb.UnimplementedPozoServiceServer
 }
 
 func startServer(){
@@ -94,7 +98,7 @@ func main() {
 	// Este se debe enviar en la funcion esEliminado de lider
 	// Debe quedarse escuchando e ir escribiendo en el txt
 	
-	cant_jugadores := 16 // Esto se asume pero para testear CAMBIARLOOOOOOOOOOOO
+	//cant_jugadores := 16 // Esto se asume pero para testear CAMBIARLOOOOOOOOOOOO
 	pozo = 0
 	const wones = 100000000
 
@@ -102,7 +106,12 @@ func main() {
 
 	defer f.Close() // Cierra el archivo cuando termina la ejecucion
 
+	for {
+		
+	}
 	// SETUP ACTIVEMQ
+	
+	/*
 
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/") // Al parecer ese puerto default funciona
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -121,6 +130,8 @@ func main() {
 		nil,     // arguments
 	)
 	failOnError(err, "Failed to declare a queue")
+
+	fmt.Println(q)
 
 	for i := 0; i < cant_jugadores; i++ {
 		// Espera 16 mensajes, o en realidad deberian ser 15?
@@ -167,5 +178,6 @@ func main() {
 		}
 
 	}
+	*/
 
 }
