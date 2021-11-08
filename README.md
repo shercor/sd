@@ -1,15 +1,53 @@
 # Tarea 2 Sistemas Distribuidos - Squid Game
 
-```
-protoc --go_out=. --go-grpc_out=. my_proto.proto 
-```
+- Álvaro Fuentes (Par. 200) 201611539-0
+- 
+- Christian Trujillo (Par. 201) 201673582-8
+- 
+- Sebastián Herrera (Par. 200) 201551551-4
+
+Para ejecutar: 
+Formato: Proceso - Maquina - IP 
+
+## Lider: dist113 - 10.6.43.101
 
 ```
-git mod init github.com/shercor/sd
+make lider_full
 ```
 
+## DataNode1: dist113 - 10.6.43.101
 
 ```
-go mod tidy
+make datanode
+```
+
+## Pozo: dist114 -10.6.43.102
+
+```
+make pozo
+```
+
+## DataNode2: dist114 - 10.6.43.102
+
+```
+make datanode
+```
+
+## DataNode3:  dist115 -10.6.43.103
+
+```
+make datanode
+```
+
+## NameNode: dist116 -10.6.43.104
+
+```
+make namenode
+```
+
+## Jugadores: dist116 -10.6.43.104
+
+```
+make jugadores_full
 ```
 
