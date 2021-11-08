@@ -1,9 +1,7 @@
 # Tarea 2 Sistemas Distribuidos - Squid Game
 
 - Álvaro Fuentes (Par. 200) 201611539-0
-- 
 - Christian Trujillo (Par. 201) 201673582-8
-- 
 - Sebastián Herrera (Par. 200) 201551551-4
 
 Para ejecutar: 
