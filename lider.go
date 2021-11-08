@@ -223,7 +223,7 @@ func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolic
 			//fmt.Println("El jugador", id_jugador, "es eliminado")
 			lista_jugadores[id_jugador-1].estado = "muerto"
 			vivo_bool = false
-			aumentarPozo(lista_jugadores[index].ID, etapa_actual)
+			aumentarPozo(id_jugador, etapa_actual)
 		}
 
 		
