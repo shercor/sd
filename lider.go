@@ -46,7 +46,7 @@ func registrarJugada(ID int32, etapa string, rpta int, is_ronda bool){
 	// conectar con NameNode	
 	var conn *grpc.ClientConn
 	//conn, err := grpc.Dial(":9400", grpc.WithInsecure())
-	conn, err = grpc.Dial("10.6.43.104:9400", grpc.WithInsecure())
+	conn, err := grpc.Dial("10.6.43.104:9400", grpc.WithInsecure())
 
 	if err != nil {
 		log.Fatalf("did not connect: %s", err)
