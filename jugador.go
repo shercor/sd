@@ -69,10 +69,10 @@ func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	eleccion_int, err := strconv.Atoi(eleccion)
 
 	contador_etapa_1 = contador_etapa_1 + eleccion_int
-	fmt.Println("Sumas el valor de ", contador_etapa_1)
+	fmt.Println("(", my_id, ") ", "Sumas el valor de ", contador_etapa_1)
 
 	// esperar Resultados ronda (que todos los jugadores vivos respondan)
-	fmt.Println("Esperando jugada de todos los jugadores vivos...")
+	fmt.Println("(", my_id, ") ", "Esperando jugada de todos los jugadores vivos...")
 	wait_jugadores := true
 	flag_next_etapa := false
 	flag_vivo := true
@@ -133,7 +133,7 @@ func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	log.Printf(response.Body)
 
 	// esperar Resultados ronda (que todos los jugadores vivos respondan)
-	fmt.Println("Esperando jugada de todos los equipos...")
+	fmt.Println("(", my_id, ") ", "Esperando jugada de todos los equipos...")
 
 	wait  := true
 	flag_vive := false
@@ -189,7 +189,7 @@ func etapa_tres(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	log.Printf(response.Body)
 
 	// esperar Resultados ronda (que todos los jugadores vivos respondan)
-	fmt.Println("Esperando jugada de todos los equipos...")
+	fmt.Println("(", my_id, ") ", "Esperando jugada de todos los equipos...")
 
 	wait  := true
 	flag_vive := false
@@ -218,7 +218,7 @@ func etapa_tres(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 
 // rutina para esperar a que empiece la proxima etapa
 func esperar_etapa(c pb.LiderServiceClient) int {
-	fmt.Println("Esperando que empiece la proxima etapa...")
+	fmt.Println("(", my_id, ") ", "Esperando que empiece la proxima etapa...")
 	wait_jugadores := true
 	flag_ganador := false
 
@@ -247,7 +247,7 @@ func esperar_etapa(c pb.LiderServiceClient) int {
 
 // checkear si es asignado a un equipo en la etapa 2
 func esperar_equipo_dos(my_id int32, c pb.LiderServiceClient) int {
-	fmt.Println("Esperando asignación de equipos...")
+	fmt.Println("(", my_id, ") ", "Esperando asignación de equipos...")
 	wait  := true
 	flag_asignado := false
 
@@ -276,7 +276,7 @@ func esperar_equipo_dos(my_id int32, c pb.LiderServiceClient) int {
 }
 
 func esperar_pareja_tres(my_id int32, c pb.LiderServiceClient) int {
-	fmt.Println("Esperando asignación de parejas...")
+	fmt.Println("(", my_id, ") ", "Esperando asignación de parejas...")
 	wait  := true
 	flag_asignado := false
 
@@ -397,9 +397,9 @@ func main() {
 		var ganador = 0
 		switch etapa {
 		case 1:
-			fmt.Println("Etapa 1")
+			fmt.Println("(", my_id, ") ", "Etapa 1")
 			for estado != 2 { // estado == 2 es que pasa a la siguiente etapa (o es ganador)
-				fmt.Println("Ronda: ", ronda+1)
+				fmt.Println("(", my_id, ") ", "Ronda: ", ronda+1)
 				estado = etapa_uno(bot, my_id, c)
 				if estado == 0 { // muere
 					alive = false
@@ -408,10 +408,10 @@ func main() {
 				ronda = ronda + 1
 			}		
 		case 2:
-			fmt.Println("Etapa 2")
+			fmt.Println("(", my_id, ") ", "Etapa 2")
 			estado = esperar_equipo_dos(my_id, c)
 			if estado == 1{ // equipo asignado
-				fmt.Println("Equipo asignado")
+				fmt.Println("(", my_id, ") ", "Equipo asignado")
 
 				estado = etapa_dos(bot, my_id, c)  // estado == 2 es que pasa a la siguiente etapa
 				if estado == 0 { // muere 
@@ -426,10 +426,10 @@ func main() {
 
 			
 		case 3:
-			fmt.Println("Etapa 3")
+			fmt.Println("(", my_id, ") ", "Etapa 3")
 			estado = esperar_pareja_tres(my_id, c)
 			if estado == 1{ // equipo asignado
-				fmt.Println("Pareja asignada")
+				fmt.Println("(", my_id, ") ", "Pareja asignada")
 
 				estado = etapa_tres(bot, my_id, c)  // estado == 2 es que pasa a la siguiente etapa (ganar en este caso)
 				if estado == 0 { // muere 
@@ -447,19 +447,19 @@ func main() {
 		}
 
 		if (alive  == false){
-			fmt.Println("Has muerto")
+			fmt.Println("(", my_id, ") ", "Has muerto")
 			break
 		}
 		if (estado == 2) {
-			fmt.Println("Pasas a la siguiente etapa")
+			fmt.Println("(", my_id, ") ", "Pasas a la siguiente etapa")
 			ganador = esperar_etapa(c)
 			etapa = etapa + 1
 			fmt.Println("-------------------------")
 		}		
 
 		if (ganador == 1){
-			fmt.Println("Ganaste el juego del Calamar")
-			fmt.Println("Ganaste X wones")
+			fmt.Println("(", my_id, ") ", "Ganaste el juego del Calamar")
+			fmt.Println("(", my_id, ") ", "Ganaste X wones")
 			break
 
 			// consultar wones con jugador->lider->pozo y de vuelta
