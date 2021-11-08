@@ -438,8 +438,7 @@ func startServer(){
 	/*  Iniciar servidor Lider */
 	fmt.Println("Iniciando servidor Lider...")
 
-	// TO-DO: ver si esta aca el error, buscar tutoriales 
-	lis, err := net.Listen("tcp", fmt.Sprintf("10.6.43.101:%d", 9000))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}else{
