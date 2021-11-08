@@ -43,6 +43,7 @@ func registrarJugada(ID int32, etapa string, rpta int, is_ronda bool){
 	}
 	jugada := strconv.Itoa(rpta)
 
+	fmt.Print("Registrando jugada de jugador ", strconv.Itoa(int(ID) ), "...")
 	// conectar con NameNode	
 	var conn *grpc.ClientConn
 	//conn, err := grpc.Dial(":9400", grpc.WithInsecure())
