@@ -14,7 +14,27 @@ import (
 	"google.golang.org/grpc"
 )
 
-// TO-DO: func ver pozo
+
+// ver monto acumulado del pozo
+func verMontoAcumulado(c pb.LiderServiceClient){
+
+	fmt.Println("¿ver Monto Acumulado? (y/n)")
+	reader := bufio.NewReader(os.Stdin)
+	char, _, err := reader.ReadRune()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if (char == 'y'){
+		response, err := c.ConsultarMontoAcumulado(context.Background(), &pb.Message{Body: "CONSULTA"})
+		if err != nil {
+			log.Fatalf("Error when calling ConsultarMontoAcumulado: %s", err)
+		}
+		monto := response.Body
+		fmt.Println("Monto acumulado: ", monto)
+	}
+}
+	
 
 
 // rutina etapa 1
@@ -23,6 +43,7 @@ func etapa_uno(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	// elegir numero entre el 1 y 10 
 	eleccion := "" 
 	if bot == false{
+		verMontoAcumulado(c)
 		fmt.Println("Elija numero del 1 al 10:")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -84,6 +105,7 @@ func etapa_dos(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	// elegir numero entre el 1 y 10 
 	eleccion := 0 
 	if bot == false{
+		verMontoAcumulado(c)
 		fmt.Println("Elija numero del 1 al 4:")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -143,6 +165,7 @@ func etapa_tres(bot bool, my_ID int32, c pb.LiderServiceClient) int {
 	// elegir numero entre el 1 y 10 
 	eleccion := "" 
 	if bot == false{
+		verMontoAcumulado(c)
 		fmt.Println("Elija numero del 1 al 10:")
 
 		reader := bufio.NewReader(os.Stdin)
@@ -329,7 +352,6 @@ func main() {
 	}
 
 	// conectar con lider
-
 	// obtener mi IP, se hace una conexion UDP a DNS para obtener mi IP
 	c_temp, err := net.Dial("udp", "8.8.8.8:80")
     if err != nil {
@@ -437,12 +459,11 @@ func main() {
 		if (ganador == 1){
 			fmt.Println("Ganaste el juego del Calamar")
 			fmt.Println("Ganaste X wones")
+			break
 
 			// consultar wones con jugador->lider->pozo y de vuelta
 		}
 	}
-
-	
 
 	fmt.Println("Finalizando proceso jugador")
 }

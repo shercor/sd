@@ -51,14 +51,51 @@ failOnError(err, "Failed to publish a message")
 log.Printf(" [x] Sent %s", body)
 */
 
+/********************************** gRPC **********************************************/
+
+type Server struct {
+	pb.UnimplementedLiderServiceServer
+}
+
+func startServer(){
+	/*  Iniciar servidor Pozo */
+	fmt.Println("Iniciando servidor Pozo...")
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9500))
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}else{
+		log.Printf("... listen exitoso")
+	}
+
+	s := Server{}
+	grpcServer := grpc.NewServer()
+	pb.RegisterPozoServiceServer(grpcServer, &s)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %s", err)
+	}
+}
+
+func  (s *Server)  ConsultarMontoAcumulado(ctx context.Context, in *pb.Message) (*pb.Message, error) {
+	log.Printf("Receive message body from Lider: %s", in.Body)
+	monto_acumulado := strconv.Itoa(pozo)
+	return &pb.Message{Body: monto_acumulado}, nil
+}
+
+/*************************************************************************************/
+
+var pozo int // pozo acumulado
+
 func main() {
+
+	go startServer() // gRPC
 
 	// Recibe un msj con el ID de un jugador muerto y la etapa en la que fue eliminado
 	// Este se debe enviar en la funcion esEliminado de lider
 	// Debe quedarse escuchando e ir escribiendo en el txt
-
+	
 	cant_jugadores := 16 // Esto se asume pero para testear CAMBIARLOOOOOOOOOOOO
-	pozo := 0
+	pozo = 0
 	const wones = 100000000
 
 	f, _ := os.Create("pozo.txt")

@@ -45,6 +45,19 @@ func (s *Server) SayHello(ctx context.Context, in *pb.Message) (*pb.Message, err
 	return &pb.Message{Body: "Hello From the Server!"}, nil
 }
 
+func (s *Server) ConsultarMontoAcumulado(ctx context.Context, in *pb.Message) (*pb.Message, error) {
+	log.Printf("Receive message body from client: %s", in.Body)
+
+	response, err := c_lider.ConsultarMontoAcumulado(context.Background(), &pb.Message{Body: "CONSULTA"})
+	if err != nil {
+		log.Fatalf("Error when calling ConsultarMontoAcumulado: %s", err)
+	}
+
+	monto_acumulado := response.Body
+	
+	return &pb.Message{Body: monto_acumulado}, nil
+}
+
 // funcion response para unir jugador al juego
 func (s *Server) Unirse(ctx context.Context, in *pb.Solicitud) (*pb.RespuestaSolicitud, error) {
 	log.Printf("IP de jugador: %s, port: %s", in.IP, in.PORT)
@@ -164,7 +177,7 @@ func (s *Server) GetResultadosRonda (ctx context.Context,  in *pb.RespuestaSolic
 	for i := 0; i < len(muertos_por_ronda); i++ {
 		playerID := muertos_por_ronda[i]
 		if (playerID == id_jugador){
-			fmt.Println("El jugador", id_jugador, "es eliminado")
+			//fmt.Println("El jugador", id_jugador, "es eliminado")
 			lista_jugadores[id_jugador-1].estado = "muerto"
 
 
@@ -454,10 +467,23 @@ var contador_rondas int // contador de ronda para etapa 1
 
 var grupoA_suma int // sumas para etapa 2
 var grupoB_suma  int 
-	
+
+var c_lider pb.PozoServiceClient
 
 /************** Funcion main ***************/
 func main() {
+
+	// conectar con Pozo	
+	var conn *grpc.ClientConn
+	conn, err := grpc.Dial(":9500", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %s", err)
+	}
+	defer conn.Close()
+
+	c_lider := pb.NewPozoServiceClient(conn)
+	fmt.Println(c_lider)
+
 	// Definiciones iniciales
 
 	cant_jugadores = 16

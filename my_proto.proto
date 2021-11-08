@@ -26,7 +26,7 @@ message ResultadoJugada {
     bool WAIT = 3; // flag esperar a otros jugadores
 }
 
-// Interface exported by the server.
+// Interface exported by the server (Lider)
 service LiderService {
     // Simple rpc
     rpc Unirse(Solicitud) returns (RespuestaSolicitud) {} // unirse al juego
@@ -42,6 +42,13 @@ service LiderService {
     rpc NotificarEstado(RespuestaSolicitud) returns (Message) {} // notificar estado (OK, MUERTO)
 
     rpc EmpezarEtapa(Message) returns (Message) {} // para que esperen los jugadores a que empiece la suguiente etapa
+
+    rpc ConsultarMontoAcumulado(Message) returns (Message) {} // jugador -> lider
+}
+
+// Interface exported by the server (Pozo)
+service PozoService {
+    rpc ConsultarMontoAcumulado(Message) returns (Message) {} // lider -> pozo
 }
 
 

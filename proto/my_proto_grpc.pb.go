@@ -26,9 +26,9 @@ type LiderServiceClient interface {
 	ProcesarJugadaDos(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
 	ProcesarJugadaTres(ctx context.Context, in *Jugada, opts ...grpc.CallOption) (*Message, error)
 	GetResultadosRonda(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*ResultadoJugada, error)
-	//rpc AsignarEquipo(RespuestaSolicitud) returns (Message) {} // asignar equipo para parte 2
 	NotificarEstado(ctx context.Context, in *RespuestaSolicitud, opts ...grpc.CallOption) (*Message, error)
 	EmpezarEtapa(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	ConsultarMontoAcumulado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 }
 
 type liderServiceClient struct {
@@ -111,6 +111,15 @@ func (c *liderServiceClient) EmpezarEtapa(ctx context.Context, in *Message, opts
 	return out, nil
 }
 
+func (c *liderServiceClient) ConsultarMontoAcumulado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.LiderService/ConsultarMontoAcumulado", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LiderServiceServer is the server API for LiderService service.
 // All implementations must embed UnimplementedLiderServiceServer
 // for forward compatibility
@@ -123,9 +132,9 @@ type LiderServiceServer interface {
 	ProcesarJugadaDos(context.Context, *Jugada) (*Message, error)
 	ProcesarJugadaTres(context.Context, *Jugada) (*Message, error)
 	GetResultadosRonda(context.Context, *RespuestaSolicitud) (*ResultadoJugada, error)
-	//rpc AsignarEquipo(RespuestaSolicitud) returns (Message) {} // asignar equipo para parte 2
 	NotificarEstado(context.Context, *RespuestaSolicitud) (*Message, error)
 	EmpezarEtapa(context.Context, *Message) (*Message, error)
+	ConsultarMontoAcumulado(context.Context, *Message) (*Message, error)
 	mustEmbedUnimplementedLiderServiceServer()
 }
 
@@ -156,6 +165,9 @@ func (UnimplementedLiderServiceServer) NotificarEstado(context.Context, *Respues
 }
 func (UnimplementedLiderServiceServer) EmpezarEtapa(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EmpezarEtapa not implemented")
+}
+func (UnimplementedLiderServiceServer) ConsultarMontoAcumulado(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConsultarMontoAcumulado not implemented")
 }
 func (UnimplementedLiderServiceServer) mustEmbedUnimplementedLiderServiceServer() {}
 
@@ -314,6 +326,24 @@ func _LiderService_EmpezarEtapa_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _LiderService_ConsultarMontoAcumulado_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LiderServiceServer).ConsultarMontoAcumulado(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.LiderService/ConsultarMontoAcumulado",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LiderServiceServer).ConsultarMontoAcumulado(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // LiderService_ServiceDesc is the grpc.ServiceDesc for LiderService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -352,6 +382,96 @@ var LiderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EmpezarEtapa",
 			Handler:    _LiderService_EmpezarEtapa_Handler,
+		},
+		{
+			MethodName: "ConsultarMontoAcumulado",
+			Handler:    _LiderService_ConsultarMontoAcumulado_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "my_proto.proto",
+}
+
+// PozoServiceClient is the client API for PozoService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type PozoServiceClient interface {
+	ConsultarMontoAcumulado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+}
+
+type pozoServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewPozoServiceClient(cc grpc.ClientConnInterface) PozoServiceClient {
+	return &pozoServiceClient{cc}
+}
+
+func (c *pozoServiceClient) ConsultarMontoAcumulado(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error) {
+	out := new(Message)
+	err := c.cc.Invoke(ctx, "/t2.PozoService/ConsultarMontoAcumulado", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// PozoServiceServer is the server API for PozoService service.
+// All implementations must embed UnimplementedPozoServiceServer
+// for forward compatibility
+type PozoServiceServer interface {
+	ConsultarMontoAcumulado(context.Context, *Message) (*Message, error)
+	mustEmbedUnimplementedPozoServiceServer()
+}
+
+// UnimplementedPozoServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedPozoServiceServer struct {
+}
+
+func (UnimplementedPozoServiceServer) ConsultarMontoAcumulado(context.Context, *Message) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConsultarMontoAcumulado not implemented")
+}
+func (UnimplementedPozoServiceServer) mustEmbedUnimplementedPozoServiceServer() {}
+
+// UnsafePozoServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to PozoServiceServer will
+// result in compilation errors.
+type UnsafePozoServiceServer interface {
+	mustEmbedUnimplementedPozoServiceServer()
+}
+
+func RegisterPozoServiceServer(s grpc.ServiceRegistrar, srv PozoServiceServer) {
+	s.RegisterService(&PozoService_ServiceDesc, srv)
+}
+
+func _PozoService_ConsultarMontoAcumulado_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PozoServiceServer).ConsultarMontoAcumulado(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/t2.PozoService/ConsultarMontoAcumulado",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PozoServiceServer).ConsultarMontoAcumulado(ctx, req.(*Message))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// PozoService_ServiceDesc is the grpc.ServiceDesc for PozoService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var PozoService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "t2.PozoService",
+	HandlerType: (*PozoServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ConsultarMontoAcumulado",
+			Handler:    _PozoService_ConsultarMontoAcumulado_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
