@@ -48,7 +48,7 @@ make datanode
 make namenode
 ```
 
-## Jugadores: dist116 -10.6.43.104 (16 jugadores bot)
+## Jugadores: dist116 -10.6.43.104 (16 jugadores bot) (OBSERVACIÓN: demora en ejecutarse)
 
 ```
 make jugadores_full
