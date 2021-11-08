@@ -520,7 +520,7 @@ func aumentarPozo(ID int32, etapa string){
 	failOnError(err, "Failed to declare a queue")
 
 	//body := "Hello World!" // MENSAJE A ENVIAR ---------------
-	body := strconv.Itoa(int(in.ID)) + "_" + etapa
+	body := strconv.Itoa(int(ID)) + "_" + etapa
 
 	err = ch.Publish( 	   // ENVIA EL MENSAJE A LA COLA
 		"",     // exchange
