@@ -4,8 +4,12 @@
 - Christian Trujillo (Par. 201) 201673582-8
 - Sebastián Herrera (Par. 200) 201551551-4
 
-Para ejecutar: 
+Para ejecutar, en cada maquina: 
+- Navegar a carpeta /sd
+- Ejecutar comando make dependiendo del tipo de proceso
+
 Formato: Proceso - Maquina - IP 
+
 
 ## Lider: dist113 - 10.6.43.101
 
