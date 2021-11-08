@@ -78,6 +78,7 @@ func (s *Server) RegistrarJugada(ctx context.Context, in *pb.InfoJugada) (*pb.Me
 		panic(err)
 	}
 
+	fmt.Print("Conectando con datanode ", ip_datanodes[opt], "...")
 	// conectar con NameNode	
 	var conn *grpc.ClientConn
 	conn, err = grpc.Dial(ip_datanodes[opt] + ":9300", grpc.WithInsecure())
