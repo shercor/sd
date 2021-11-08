@@ -109,6 +109,8 @@ func main() {
 
 	forever := make(chan bool) // Crear un canal para recibir mensajes en loop infinito
 
+	fmt.Println("Canal creado")
+	
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body) // recibe mensaje
