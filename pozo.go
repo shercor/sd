@@ -109,9 +109,12 @@ func main() {
 	go func() {
 		for d := range msgs {
 			log.Printf("Received a message: %s", d.Body) // recibe mensaje
+
+			// d.Body (type []byte) 
+			s := string(d.Body)
 			
-			ID_actual := strings.Split(d.Body, "_")[0]
-			etapa := strings.Split(d.Body, "_")[1]
+			ID_actual := strings.Split(s, "_")[0]
+			etapa := strings.Split(s, "_")[1]
 			
 			// Por cada mensaje, aumenta los wones y escribe en el txt el jugador que murio
 			pozo += wones
