@@ -14,6 +14,7 @@ import (
 	"net"
 	"google.golang.org/grpc"
 	"golang.org/x/net/context"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 /************** Lock ***************/
@@ -487,6 +488,14 @@ func consultarNameNode(){
 }
 
 /******* RABBITMQ *************************/
+
+func failOnError(err error, msg string) { // Para errores
+    if err != nil {
+        log.Fatalf("%s: %s", msg, err)
+    }
+}
+
+// rutina aumentar pozo cuando muere un jugador
 func aumentarPozo(ID int32, etapa string){ 
 	fmt.Println("Aumentando pozo (asíncronamente)")
 	// SETUP RABBITMQ
@@ -554,7 +563,7 @@ var contador_rondas int // contador de ronda para etapa 1
 var grupoA_suma int // sumas para etapa 2
 var grupoB_suma  int 
 
-var etapa_actual int
+var etapa_actual string
 
 /************** Funcion main ***************/
 func main() {
