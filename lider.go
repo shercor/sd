@@ -569,6 +569,8 @@ var etapa_actual string
 /************** Funcion main ***************/
 func main() {
 
+	aumentarPozo(-1, "1")
+
 	// Definiciones iniciales
 
 	cant_jugadores = 16
