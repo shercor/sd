@@ -73,7 +73,7 @@ func main() {
 
 	// RabbitMQ
 	//conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/") 
-	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672//pozo") 
+	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/pozo") 
 	
 
 	failOnError(err, "Failed to connect to RabbitMQ")
