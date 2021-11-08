@@ -13,14 +13,18 @@ import (
 	"golang.org/x/net/context"
 )
 
-func leerRegistro(ID int32) {
+func leerRegistro(ID int32) string {
 
 	str_msg := ""
 	lista_txt := filtrarTxt(ID)
 
+	if (len(lista_txt) == 0){
+		return ""
+	}
+
 	for i := 0; i < len(lista_txt); i++ {
 		// Lee cada archivo que involucre al jugador, uno por uno
-		content, err := ioutil.ReadFile(lista_txt[i] + ".txt") // No se si sera necesario el ".txt"
+		content, err := ioutil.ReadFile(lista_txt[i] ) 
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -29,7 +33,7 @@ func leerRegistro(ID int32) {
 		str_msg += lista_txt[i] + ": " + string(content) + "\n" // Se envia un puro str, para enviar un puro msj
 
 	}
-	// enviar str_msg
+	return str_msg
 }
 
 func filtrarTxt(ID int32) (lista_txt []string) { // Filtra y retorna los nombres de los txt que involucren al jugador ID
@@ -103,6 +107,12 @@ func startServer(){
 func (s *Server) RegistrarJugada(ctx context.Context, in *pb.InfoJugada) (*pb.Message, error) {	
 	escribirRegistro(in.ID, in.Etapa, in.Jugada, in.Ronda)
 	return &pb.Message{Body: "OK"}, nil
+}
+
+// funcion response para consultar jugada
+func  (s *Server) ConsultarJugada(ctx context.Context, in *pb.RespuestaSolicitud) (*pb.Message, error) {
+	response := leerRegistro(in.ID)
+	return &pb.Message{Body: response}, nil
 }
 
 /*

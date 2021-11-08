@@ -25,6 +25,32 @@ type Server struct {
 	pb.UnimplementedNameNodeServiceServer
 }
 
+// funcion response para consultar jugada
+func  (s *Server) ConsultarJugada(ctx context.Context, in *pb.RespuestaSolicitud) (*pb.Message, error) {
+	full_response := ""
+	for i := 0; i < 3; i++ { // consultar cada NameNode
+		// conectar con NameNode	
+		var conn *grpc.ClientConn
+		conn, err := grpc.Dial(ip_datanodes[i] + ":9300", grpc.WithInsecure() )
+		if err != nil {
+			log.Fatalf("did not connect: %s", err)
+		}
+		defer conn.Close()
+
+		c := pb.NewDataNodeServiceClient(conn)
+		
+		response, err := c.ConsultarJugada(context.Background(), &pb.RespuestaSolicitud{ID: in.ID})
+		if err != nil {
+			log.Fatalf("Error when calling ConsultarJugada: %s", err)
+		}
+
+		full_response = full_response + response.Body
+	
+	}
+	
+	return &pb.Message{Body: full_response}, nil
+}
+
 // funcion response para registrar jugada
 func (s *Server) RegistrarJugada(ctx context.Context, in *pb.InfoJugada) (*pb.Message, error) {
 	

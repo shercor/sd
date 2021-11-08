@@ -303,14 +303,6 @@ func getRandomNum(min, max int) (result int) {
 	return result
 }
 
-func informarJugadas() { // Informa a NameNode cada vez que un jugador hace una jugada
-
-}
-
-func informarPozo() { // Agrega 100 millones a Pozo cuando un jugador muere
-
-}
-
 func jugadoresVivos(cant_jugadores int, print bool) (lista_vivos []int32) { // Muestra por consola a los jugadores vivos al término de cada etapa
 	
 	for i := 0; i < cant_jugadores; i++ {
@@ -334,9 +326,6 @@ func mostrarGanadores(cant_jugadores int) { // Muestra por consola a los ganador
 	}
 }
 
-func revisarJugadas() { // Para preguntar sobre las jugadas historicamente de un determinado jugador
-
-}
 
 func esEliminado(index int32) { // Cuando la logica detecta que el jugador muere, avisa al jugador
 	/*
@@ -475,7 +464,26 @@ func consultarNameNode(){
 		reader := bufio.NewReader(os.Stdin)
 		eleccion, _ = reader.ReadString('\n')
 		eleccion = strings.TrimSuffix(eleccion, "\n")
-		// TO-DO: gRPC a Name Node 
+
+		eleccion_int, err := strconv.Atoi(eleccion)
+		
+		// conectar con NameNode	
+		var conn *grpc.ClientConn
+		conn, err = grpc.Dial(":9400", grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("did not connect: %s", err)
+		}
+		defer conn.Close()
+
+		c_lider := pb.NewNameNodeServiceClient(conn)
+		
+		response, err := c_lider.ConsultarJugada(context.Background(), &pb.RespuestaSolicitud{ID: int32(eleccion_int) })
+		if err != nil {
+			log.Fatalf("Error when calling ConsultarJugada: %s", err)
+		}
+
+		fmt.Println(response.Body)
+
 	}
 }
 

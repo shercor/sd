@@ -61,10 +61,12 @@ service PozoService {
 // Interface exported by the server (NameNode)
 service NameNodeService {
     rpc RegistrarJugada(InfoJugada) returns (Message) {}
+    rpc ConsultarJugada(RespuestaSolicitud) returns (Message) {}
 }
 
 // Interface exported by the server (DataNode)
 service DataNodeService {
     rpc RegistrarJugada(InfoJugada) returns (Message) {}
+    rpc ConsultarJugada(RespuestaSolicitud) returns (Message) {}
 }
 
