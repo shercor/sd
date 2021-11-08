@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	pb "github.com/shercor/sd/proto"
 	"net"
 	"google.golang.org/grpc"
