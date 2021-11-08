@@ -130,7 +130,5 @@ func main() {
 	}()
 	<-forever
 
-	for {	
-	}
 
 }
