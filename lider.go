@@ -512,7 +512,7 @@ func aumentarPozo(ID int32, etapa string){
 	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
-		"pozo", // name
+		"wones", // name
 		false,   // durable
 		false,   // delete when unused
 		false,   // exclusive
@@ -570,7 +570,7 @@ var etapa_actual string
 /************** Funcion main ***************/
 func main() {
 
-	aumentarPozo(-1, "1")
+	//aumentarPozo(-1, "1") // debug
 
 	// Definiciones iniciales
 
