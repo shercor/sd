@@ -501,7 +501,7 @@ func aumentarPozo(ID int32, etapa string){
 	// SETUP RABBITMQ
 	//conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	//conn, err := amqp.Dial("amqp://lider:lider@10.6.43.102:5672/")
-	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/pozo")
+	conn, err := amqp.Dial("amqp://admin:admin@10.6.43.102:5672/")
 	
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()

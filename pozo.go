@@ -73,7 +73,7 @@ func main() {
 
 	// RabbitMQ
 	//conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/") 
-	conn, err := amqp.Dial("amqp://pozo:pozo@10.6.43.102:5672/pozo") 
+	conn, err := amqp.Dial("amqp://admin:admin@10.6.43.102:5672/") 
 	
 
 	failOnError(err, "Failed to connect to RabbitMQ")
@@ -128,6 +128,8 @@ func main() {
 			f.WriteString(write_str + "\n")
 		}
 	}()
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+
 	<-forever
 
 
