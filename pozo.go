@@ -11,7 +11,8 @@ import (
 	"google.golang.org/grpc"
 	"golang.org/x/net/context"
 
-	amqp "github.com/rabbitmq/amqp091-go"
+	//amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/streadway/amqp"
 )
 
 func failOnError(err error, msg string) { // Para errores
