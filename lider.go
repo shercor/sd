@@ -14,8 +14,7 @@ import (
 	"net"
 	"google.golang.org/grpc"
 	"golang.org/x/net/context"
-	//amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/streadway/amqp"
+	//"github.com/streadway/amqp" // (LEER README)
 )
 
 /************** Lock ***************/
@@ -496,8 +495,9 @@ func failOnError(err error, msg string) { // Para errores
     }
 }
 
-// rutina aumentar pozo cuando muere un jugador
+// rutina aumentar pozo cuando muere un jugador (LEER README)
 func aumentarPozo(ID int32, etapa string){ 
+	/*
 	fmt.Println("Aumentando pozo (asíncronamente)")
 	// SETUP RABBITMQ
 	//conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
@@ -535,6 +535,7 @@ func aumentarPozo(ID int32, etapa string){
 		})
 	failOnError(err, "Failed to publish a message")
 	log.Printf(" [x] Sent %s", body)
+	*/
 }
 
 /******* variables globales ***************/
